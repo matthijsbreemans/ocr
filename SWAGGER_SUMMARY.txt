@@ -1,0 +1,251 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                   SWAGGER/OpenAPI INTEGRATION COMPLETE                        ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+✅ WHAT WAS ADDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Interactive Swagger UI
+   Location: http://localhost:3040/api-docs
+   Features:
+   ├─ "Try it out" functionality for all endpoints
+   ├─ Request/response examples
+   ├─ Complete schema documentation
+   ├─ Multiple server support (dev/staging/prod)
+   └─ Download OpenAPI spec
+
+2. OpenAPI 3.0 Specification
+   File: src/lib/openapi.json
+   Contains:
+   ├─ POST /api/upload - Document upload endpoint
+   ├─ GET /api/status/{id} - Job status endpoint
+   ├─ Complete request/response schemas
+   ├─ Error examples (MIME spoofing, image bombs, SSRF)
+   └─ Webhook payload documentation
+
+3. Dynamic Server Configuration
+   File: src/lib/config.ts
+   Supports:
+   ├─ Same origin (default) - API on same server as frontend
+   ├─ Different port - API on localhost:4000, frontend on :3000
+   └─ Different domain - API on api.your-domain.com
+
+4. API Endpoint for Spec
+   Endpoint: GET /api/openapi
+   Returns: OpenAPI 3.0 JSON specification with dynamic server URL
+
+
+📁 FILES CREATED/MODIFIED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Created:
+├─ src/lib/openapi.json              - OpenAPI 3.0 specification
+├─ src/app/api-docs/page.tsx         - Swagger UI page
+├─ src/app/api/openapi/route.ts      - Spec endpoint
+├─ src/lib/config.ts                 - API configuration helper
+├─ API_CONFIGURATION.md              - Separate API server guide
+├─ SWAGGER_SETUP.md                  - Complete Swagger documentation
+└─ SWAGGER_SUMMARY.txt               - This file
+
+Modified:
+├─ package.json                      - Added swagger-ui-react
+├─ .env.example                      - Added API_BASE_URL config
+├─ src/components/UploadForm.tsx     - Uses getApiUrl()
+├─ src/components/JobStatus.tsx      - Uses getApiUrl()
+└─ README.md                         - Added Swagger reference
+
+
+🌐 ACCESS POINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Interactive Documentation:
+  http://localhost:3040/api-docs
+
+OpenAPI JSON Spec:
+  http://localhost:3040/api/openapi
+
+Homepage with Web UI:
+  http://localhost:3040
+
+
+🎯 KEY FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ SWAGGER UI PAGE (/api-docs)                                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ╔══════════════════════════════════════════════════════╗           │
+│  ║  OCR API Service - API Documentation                ║           │
+│  ╚══════════════════════════════════════════════════════╝           │
+│                                                                      │
+│  [Servers: http://localhost:3040 ▼]                                │
+│                                                                      │
+│  ▼ POST /api/upload                                                 │
+│    Upload a document for OCR processing                             │
+│    [Try it out]                                                     │
+│                                                                      │
+│    Parameters:                                                      │
+│    • file (binary) - Document file                                 │
+│    • documentType (string) - Document type                         │
+│    • email (email) - Email address                                 │
+│    • callbackWebhook (URL) - Optional webhook                      │
+│                                                                      │
+│    Responses:                                                       │
+│    201 ✓ Success                                                   │
+│    400 ✗ Validation error                                          │
+│    500 ✗ Server error                                              │
+│                                                                      │
+│  ▼ GET /api/status/{id}                                            │
+│    Get job status and results                                       │
+│    [Try it out]                                                     │
+│                                                                      │
+│    Parameters:                                                      │
+│    • id (uuid) - Job ID                                            │
+│                                                                      │
+│    Responses:                                                       │
+│    200 ✓ Status retrieved                                          │
+│    400 ✗ Invalid ID                                                │
+│    404 ✗ Not found                                                 │
+│                                                                      │
+│  Schemas ▼                                                          │
+│    • UploadResponse                                                │
+│    • JobStatus                                                     │
+│    • ErrorResponse                                                 │
+│    • WebhookPayload                                                │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+
+
+🔧 CONFIGURATION OPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Option 1: Same Origin (Default)
+┌────────────────────────────────────────┐
+│  http://localhost:3040                 │
+│  ├─ /          → Frontend              │
+│  ├─ /api-docs  → Swagger UI            │
+│  ├─ /api/upload    → Upload endpoint   │
+│  └─ /api/status/:id → Status endpoint  │
+└────────────────────────────────────────┘
+
+Configuration: None needed!
+
+
+Option 2: Different Port
+┌─────────────────────────┐     ┌─────────────────────────┐
+│  localhost:3040         │     │  localhost:4000         │
+│  - Frontend             │ ──► │  - /api/upload          │
+│  - Swagger UI           │     │  - /api/status/:id      │
+└─────────────────────────┘     └─────────────────────────┘
+
+Configuration:
+  NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
+
+
+Option 3: Different Domain
+┌───────────────────────────┐     ┌───────────────────────────┐
+│  your-domain.com          │     │  api.your-domain.com      │
+│  - Frontend               │ ──► │  - /api/upload            │
+│  - Swagger UI             │     │  - /api/status/:id        │
+└───────────────────────────┘     └───────────────────────────┘
+
+Configuration:
+  NEXT_PUBLIC_API_BASE_URL=https://api.your-domain.com
+
+
+📚 DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. SWAGGER_SETUP.md
+   - Complete Swagger integration guide
+   - Usage examples
+   - Configuration options
+   - Troubleshooting
+
+2. API_CONFIGURATION.md
+   - How to run API on different port/domain
+   - CORS setup
+   - Deployment scenarios
+   - Docker configurations
+
+3. README.md
+   - Updated with Swagger UI link
+   - Quick start guide
+
+
+🎨 EXAMPLE: TRY IT OUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Start the server:
+   $ ./start.sh
+   (or: npm run dev)
+
+2. Open Swagger UI:
+   🌐 http://localhost:3040/api-docs
+
+3. Test upload endpoint:
+   ├─ Click "POST /api/upload"
+   ├─ Click "Try it out"
+   ├─ Select a file
+   ├─ Fill in documentType: "invoice"
+   ├─ Fill in email: "test@example.com"
+   ├─ Click "Execute"
+   └─ Copy the job ID from response
+
+4. Test status endpoint:
+   ├─ Click "GET /api/status/{id}"
+   ├─ Click "Try it out"
+   ├─ Paste job ID
+   ├─ Click "Execute"
+   └─ View job status and results
+
+
+🛠️ TOOLS INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Import to Postman:
+  1. Open Postman
+  2. Click "Import"
+  3. Enter: http://localhost:3040/api/openapi
+  4. Done! All endpoints imported
+
+Generate Client SDK:
+  $ npx @openapitools/openapi-generator-cli generate \
+      -i http://localhost:3040/api/openapi \
+      -g typescript-fetch \
+      -o ./client
+
+
+📦 DEPENDENCIES ADDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{
+  "dependencies": {
+    "swagger-ui-react": "^5.11.0"
+  },
+  "devDependencies": {
+    "@types/swagger-ui-react": "^4.18.3"
+  }
+}
+
+Total added size: ~450KB (gzipped)
+
+
+✨ SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Complete OpenAPI 3.0 specification
+✅ Interactive Swagger UI at /api-docs
+✅ "Try it out" functionality for testing
+✅ Request/response examples for all endpoints
+✅ Support for same-origin and cross-origin APIs
+✅ Dynamic server URL configuration
+✅ Professional documentation page
+✅ Import to Postman/Insomnia
+✅ Generate client SDKs
+✅ Mobile-responsive design
+
+The OCR API now has PROFESSIONAL, INTERACTIVE API DOCUMENTATION! 🎉
+
+Visit: http://localhost:3040/api-docs

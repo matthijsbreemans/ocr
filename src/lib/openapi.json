@@ -1,0 +1,431 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "OCR API Service",
+    "version": "1.0.0",
+    "description": "Queue-based OCR (Optical Character Recognition) API for extracting text from documents. Upload images or PDFs and receive extracted text via webhook or by polling the status endpoint.",
+    "contact": {
+      "name": "API Support",
+      "url": "https://github.com/yourproject/ocr-api"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3040",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "https://your-domain.com",
+      "description": "Production Server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "OCR",
+      "description": "Document upload and text extraction operations"
+    },
+    {
+      "name": "Jobs",
+      "description": "Job status and result retrieval"
+    }
+  ],
+  "paths": {
+    "/api/upload": {
+      "post": {
+        "tags": ["OCR"],
+        "summary": "Upload a document for OCR processing",
+        "description": "Upload an image or PDF file to extract text. The file is validated, queued for processing, and a job ID is returned immediately. Use the status endpoint to check progress.",
+        "operationId": "uploadDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file", "documentType", "email"],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The document file to process (PNG, JPEG, TIFF, BMP, WebP, or PDF)"
+                  },
+                  "documentType": {
+                    "type": "string",
+                    "description": "Type of document being uploaded",
+                    "example": "invoice",
+                    "minLength": 1
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "Email address for notifications",
+                    "example": "user@example.com"
+                  },
+                  "callbackWebhook": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Optional webhook URL to receive results when processing completes (HTTP or HTTPS allowed, but must not point to private/local networks)",
+                    "example": "https://your-app.com/webhook"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded successfully and queued for processing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResponse"
+                },
+                "example": {
+                  "id": "550e8400-e29b-41d4-a716-446655440000",
+                  "status": "PENDING",
+                  "message": "File uploaded successfully and queued for processing"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "noFile": {
+                    "summary": "No file provided",
+                    "value": {
+                      "error": "File is required"
+                    }
+                  },
+                  "invalidType": {
+                    "summary": "Invalid file type",
+                    "value": {
+                      "error": "File validation failed",
+                      "details": "File type mismatch: claimed image/png but detected application/pdf"
+                    }
+                  },
+                  "imageBomb": {
+                    "summary": "Image bomb detected",
+                    "value": {
+                      "error": "File validation failed",
+                      "details": "Image has 200000000 pixels, exceeds maximum 178956970"
+                    }
+                  },
+                  "ssrf": {
+                    "summary": "SSRF attempt blocked",
+                    "value": {
+                      "error": "Validation failed",
+                      "details": [
+                        {
+                          "path": ["callbackWebhook"],
+                          "message": "Webhook URL must not point to private/local networks"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status/{id}": {
+      "get": {
+        "tags": ["Jobs"],
+        "summary": "Get job status and results",
+        "description": "Retrieve the current status of a processing job. When status is COMPLETED, the OCR result will be included in the response.",
+        "operationId": "getJobStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Job ID returned from the upload endpoint",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job status retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobStatus"
+                },
+                "examples": {
+                  "pending": {
+                    "summary": "Job pending",
+                    "value": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "status": "PENDING",
+                      "documentType": "invoice",
+                      "email": "user@example.com",
+                      "createdAt": "2025-10-21T10:00:00.000Z",
+                      "updatedAt": "2025-10-21T10:00:00.000Z"
+                    }
+                  },
+                  "processing": {
+                    "summary": "Job processing",
+                    "value": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "status": "PROCESSING",
+                      "documentType": "invoice",
+                      "email": "user@example.com",
+                      "createdAt": "2025-10-21T10:00:00.000Z",
+                      "updatedAt": "2025-10-21T10:00:05.000Z"
+                    }
+                  },
+                  "completed": {
+                    "summary": "Job completed",
+                    "value": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "status": "COMPLETED",
+                      "documentType": "invoice",
+                      "email": "user@example.com",
+                      "ocrResult": "INVOICE\\n\\nBill To: Acme Corp\\nDate: 2025-10-20\\nAmount: $1,234.56\\n\\nItems:\\n1. Widget A - $500.00\\n2. Widget B - $734.56\\n\\nTotal: $1,234.56",
+                      "createdAt": "2025-10-21T10:00:00.000Z",
+                      "updatedAt": "2025-10-21T10:00:15.000Z",
+                      "processedAt": "2025-10-21T10:00:15.000Z"
+                    }
+                  },
+                  "failed": {
+                    "summary": "Job failed",
+                    "value": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "status": "FAILED",
+                      "documentType": "invoice",
+                      "email": "user@example.com",
+                      "errorMessage": "OCR processing failed: Image quality too low",
+                      "createdAt": "2025-10-21T10:00:00.000Z",
+                      "updatedAt": "2025-10-21T10:00:10.000Z",
+                      "processedAt": "2025-10-21T10:00:10.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid job ID format",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid job ID format"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Job not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UploadResponse": {
+        "type": "object",
+        "required": ["id", "status", "message"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique job identifier"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING"],
+            "description": "Initial job status (always PENDING for new uploads)"
+          },
+          "message": {
+            "type": "string",
+            "description": "Success message"
+          }
+        }
+      },
+      "JobStatus": {
+        "type": "object",
+        "required": ["id", "status", "documentType", "email", "createdAt", "updatedAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique job identifier"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "PROCESSING", "COMPLETED", "FAILED"],
+            "description": "Current job status"
+          },
+          "documentType": {
+            "type": "string",
+            "description": "Type of document"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email"
+          },
+          "ocrResult": {
+            "type": "string",
+            "description": "Extracted text (only present when status is COMPLETED)"
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Error details (only present when status is FAILED)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Job creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          },
+          "processedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Processing completion timestamp (present when COMPLETED or FAILED)"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "details": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Detailed error message"
+              },
+              {
+                "type": "array",
+                "description": "Validation errors",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "WebhookPayload": {
+        "type": "object",
+        "description": "Payload sent to webhook URL when job completes",
+        "required": ["jobId", "email", "ocrResult", "statusUrl", "timestamp"],
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Job identifier"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email"
+          },
+          "ocrResult": {
+            "type": "string",
+            "description": "Extracted text"
+          },
+          "statusUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to view the job status page"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Callback timestamp"
+          }
+        },
+        "example": {
+          "jobId": "550e8400-e29b-41d4-a716-446655440000",
+          "email": "user@example.com",
+          "ocrResult": "Extracted text from the document...",
+          "statusUrl": "http://localhost:3040/job/550e8400-e29b-41d4-a716-446655440000",
+          "timestamp": "2025-10-21T10:00:15.000Z"
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key authentication (not yet implemented - coming soon)"
+      }
+    }
+  },
+  "security": [],
+  "externalDocs": {
+    "description": "Full Documentation",
+    "url": "https://github.com/yourproject/ocr-api"
+  }
+}

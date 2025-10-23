@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ocr-postgres
+    environment:
+      POSTGRES_USER: ocruser
+      POSTGRES_PASSWORD: ocrpassword
+      POSTGRES_DB: ocrdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ocruser -d ocrdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ocr-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}
+      NODE_ENV: ${NODE_ENV:-production}
+    ports:
+      - "3040:3000"
+    command: sh -c "npx prisma db push && npm start"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ocr-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}
+      NODE_ENV: ${NODE_ENV:-production}
+      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:3040}
+    command: sh -c "npx prisma generate && npm run worker"
+    deploy:
+      replicas: 1
+
+volumes:
+  postgres_data:

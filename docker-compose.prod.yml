@@ -1,0 +1,37 @@
+# Production docker-compose for use with external PostgreSQL database
+# Usage: docker compose -f docker-compose.prod.yml up -d
+#
+# Required environment variables:
+# - DATABASE_URL: Connection string to external PostgreSQL
+# - APP_DOMAIN: Your application domain (e.g., https://ocr.your-domain.com)
+#
+# Optional:
+# - NODE_ENV: Defaults to 'production'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ocr-api
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV:-production}
+    ports:
+      - "3040:3000"
+    command: sh -c "npx prisma db push && npm start"
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ocr-worker
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV:-production}
+      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:3040}
+    command: sh -c "npx prisma generate && npm run worker"
+    restart: unless-stopped
+    deploy:
+      replicas: 1
