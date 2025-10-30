@@ -269,7 +269,7 @@ The API includes comprehensive file validation to protect against malicious uplo
 - **Processing Timeouts** - 5-minute maximum prevents resource exhaustion
 - **Defense in Depth** - Files validated at upload AND before processing
 
-See `FILE_VALIDATION.md` for detailed implementation and attack vectors prevented.
+See [docs/FILE_VALIDATION.md](docs/FILE_VALIDATION.md) for detailed implementation and attack vectors prevented.
 
 ### Additional Security Needed for Production ⚠️
 
@@ -282,7 +282,23 @@ Before deploying to production, implement:
 5. **Webhook Signatures** - HMAC signing for callbacks
 6. **Audit Logging** - Track all API access
 
-See `SECURITY.md` for complete production hardening checklist.
+See [docs/SECURITY.md](docs/SECURITY.md) for complete production hardening checklist.
+
+## 📚 Documentation
+
+All detailed documentation is located in the `/docs` folder:
+
+- [API_CONFIGURATION.md](docs/API_CONFIGURATION.md) - API URL configuration and setup
+- [ENHANCED_STRUCTURE.md](docs/ENHANCED_STRUCTURE.md) - Enhanced OCR output structure
+- [ENTITY_EXTRACTION.md](docs/ENTITY_EXTRACTION.md) - Entity extraction features
+- [EXAMPLES.md](docs/EXAMPLES.md) - Usage examples
+- [FILE_VALIDATION.md](docs/FILE_VALIDATION.md) - File validation and security
+- [FRONTEND.md](docs/FRONTEND.md) - Frontend implementation guide
+- [PRODUCTION_FEATURES.md](docs/PRODUCTION_FEATURES.md) - Production-ready features
+- [ROUTING.md](docs/ROUTING.md) - API routing documentation
+- [SECURITY.md](docs/SECURITY.md) - Security implementation details
+- [STRUCTURED_OUTPUT.md](docs/STRUCTURED_OUTPUT.md) - Structured OCR output format
+- [SWAGGER_SETUP.md](docs/SWAGGER_SETUP.md) - Swagger/OpenAPI setup guide
 
 ## License
 
