@@ -1,5 +1,11 @@
-import Tesseract from 'tesseract.js';
 import pdf from 'pdf-parse';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import { writeFile, unlink } from 'fs/promises';
+import path from 'path';
+import os from 'os';
+
+const execAsync = promisify(exec);
 
 export interface BoundingBox {
   x0: number;
@@ -182,6 +188,44 @@ export class OCRService {
     if (/^\d+([,\.]\d+)*$/.test(trimmed)) return 'number';
 
     return 'text';
+  }
+
+  /**
+   * Call PaddleOCR Python script to perform OCR
+   */
+  private async callPaddleOCR(fileBuffer: Buffer, language: string): Promise<any> {
+    const tempFilePath = path.join(os.tmpdir(), `ocr_${Date.now()}.${language === 'chi_sim' ? 'jpg' : 'png'}`);
+
+    try {
+      // Write buffer to temporary file
+      await writeFile(tempFilePath, fileBuffer);
+
+      // Call Python script
+      const { stdout, stderr } = await execAsync(
+        `python3 /app/paddle_ocr.py "${tempFilePath}" "${language}"`,
+        { maxBuffer: 10 * 1024 * 1024 } // 10MB buffer for large outputs
+      );
+
+      if (stderr && !stderr.includes('WARNING')) {
+        console.warn(`PaddleOCR stderr: ${stderr}`);
+      }
+
+      // Parse JSON output
+      const result = JSON.parse(stdout);
+
+      if (!result.success) {
+        throw new Error(result.error || 'PaddleOCR failed');
+      }
+
+      return result;
+    } finally {
+      // Cleanup temp file
+      try {
+        await unlink(tempFilePath);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
+    }
   }
 
   private estimateFontSize(bbox: BoundingBox): number {
@@ -691,26 +735,103 @@ export class OCRService {
       });
     }
 
-    // Currency Amounts (various formats)
-    const currencyPattern = /([$€£¥₹])\s*([\d,]+\.?\d{0,2})\b|([\d,]+\.?\d{0,2})\s*(USD|EUR|GBP|JPY|INR|CAD|AUD)/gi;
-    while ((match = currencyPattern.exec(allText)) !== null) {
-      const currency = match[1] || match[4];
-      const amount = match[2] || match[3];
-      const matchingWord = allWords.find(w => w.text.includes(amount));
+    // Currency Amounts (comprehensive patterns for various formats)
+    const currencyResults: Array<{ currency: string; amount: string; fullMatch: string }> = [];
+
+    // Pattern 1: Symbol before amount (most common): $1,234.56, €1.234,56, £1 234.56
+    // Supports: $, €, £, ¥, ₹, ₽, ₩, ₪, ₱, ₦, R$, kr, zł, Kč, lei, RM, ₴, ₸, ₺
+    const symbolBeforePattern = /(R\$|[$€£¥₹₽₩₪₱₦₴₸₺]|kr|zł|Kč|lei|RM)\s*(-?\(?)(\d{1,3}(?:[,.\s]\d{3})*(?:[.,]\d{1,2})?)\)?/gi;
+    while ((match = symbolBeforePattern.exec(allText)) !== null) {
+      const currency = match[1];
+      const negative = match[2];
+      const amount = (negative === '(' || negative === '-' ? '-' : '') + match[3];
+      currencyResults.push({ currency, amount, fullMatch: match[0] });
+    }
+
+    // Pattern 2: Amount with currency code after: 1,234.56 USD, 1.234,56 EUR
+    // Supports all major ISO codes
+    const amountWithCodePattern = /\b(-?\(?)(\d{1,3}(?:[,.\s]\d{3})*(?:[.,]\d{1,2})?)\)?\s*(USD|EUR|GBP|JPY|CNY|INR|CAD|AUD|NZD|CHF|SEK|NOK|DKK|PLN|CZK|HUF|RON|BGN|HRK|RUB|TRY|ZAR|BRL|MXN|ARS|CLP|COP|PEN|VEF|UAH|KZT|AED|SAR|QAR|KWD|BHD|OMR|JOD|ILS|EGP|MAD|DZD|TND|LBP|IQD|IRR|AFN|PKR|BDT|LKR|NPR|MVR|BTN|MMK|THB|LAK|KHR|VND|IDR|MYR|SGD|PHP|HKD|TWD|KRW|MNT|KGS|UZS|TMT|TJS|AMD|GEL|AZN|NGN|GHS|KES|TZS|UGX|ETB|ZMW|MWK|MZN|AOA|XOF|XAF|SCR|MUR|MGA|KMF|DJF|SOS|RWF|BIF|STD|CVE|SLL|LRD|GMD|GNF|SZL|LSL|BWP|NAD|ZWL|MZM)\b/gi;
+    while ((match = amountWithCodePattern.exec(allText)) !== null) {
+      const negative = match[1];
+      const amount = (negative === '(' || negative === '-' ? '-' : '') + match[2];
+      const currency = match[3];
+      currencyResults.push({ currency, amount, fullMatch: match[0] });
+    }
+
+    // Pattern 3: Symbol after amount (European style): 1234,56€, 100$
+    const symbolAfterPattern = /\b(-?\(?)(\d{1,3}(?:[,.\s]\d{3})*(?:[.,]\d{1,2})?)\)?\s*([$€£¥₹₽₩₪₱₦₴₸₺]|kr|zł|Kč|lei|RM)/gi;
+    while ((match = symbolAfterPattern.exec(allText)) !== null) {
+      const negative = match[1];
+      const amount = (negative === '(' || negative === '-' ? '-' : '') + match[2];
+      const currency = match[3];
+      currencyResults.push({ currency, amount, fullMatch: match[0] });
+    }
+
+    // Pattern 4: Full currency names: 100 dollars, 50 euros, 25 pounds
+    const currencyNamePattern = /\b(-?\(?)(\d{1,3}(?:[,.\s]\d{3})*(?:[.,]\d{1,2})?)\)?\s+(dollars?|euros?|pounds?|yen|yuan|rupees?|rubles?|francs?|kronas?|kronor|pesos?|reais?|rands?|shekels?|dirhams?|riyals?|dinars?|baht|ringgit|won|zlotys?|forints?|lei|hryvnias?)/gi;
+    while ((match = currencyNamePattern.exec(allText)) !== null) {
+      const negative = match[1];
+      const amount = (negative === '(' || negative === '-' ? '-' : '') + match[2];
+      const currencyName = match[3].toLowerCase();
+
+      // Map currency names to symbols/codes
+      const currencyMap: Record<string, string> = {
+        'dollar': 'USD', 'dollars': 'USD',
+        'euro': 'EUR', 'euros': 'EUR',
+        'pound': 'GBP', 'pounds': 'GBP',
+        'yen': 'JPY',
+        'yuan': 'CNY',
+        'rupee': 'INR', 'rupees': 'INR',
+        'ruble': 'RUB', 'rubles': 'RUB',
+        'franc': 'CHF', 'francs': 'CHF',
+        'krona': 'SEK', 'kronas': 'SEK', 'kronor': 'SEK',
+        'peso': 'MXN', 'pesos': 'MXN',
+        'real': 'BRL', 'reais': 'BRL',
+        'rand': 'ZAR', 'rands': 'ZAR',
+        'shekel': 'ILS', 'shekels': 'ILS',
+        'dirham': 'AED', 'dirhams': 'AED',
+        'riyal': 'SAR', 'riyals': 'SAR',
+        'dinar': 'KWD', 'dinars': 'KWD',
+        'baht': 'THB',
+        'ringgit': 'MYR',
+        'won': 'KRW',
+        'zloty': 'PLN', 'zlotys': 'PLN',
+        'forint': 'HUF', 'forints': 'HUF',
+        'lei': 'RON',
+        'hryvnia': 'UAH', 'hryvnias': 'UAH'
+      };
+
+      const currency = currencyMap[currencyName] || currencyName;
+      currencyResults.push({ currency, amount, fullMatch: match[0] });
+    }
+
+    // Remove duplicates and process results
+    const seenCurrency = new Set<string>();
+    currencyResults.forEach(result => {
+      const key = `${result.amount}:${result.currency}`;
+      if (seenCurrency.has(key)) return;
+      seenCurrency.add(key);
+
+      // Clean up amount (remove spaces, normalize decimal separator)
+      const cleanAmount = result.amount.replace(/\s/g, '');
+      const matchingWord = allWords.find(w =>
+        w.text.includes(cleanAmount.replace(/[,.].*$/, '')) || // Match the whole number part
+        result.fullMatch.includes(w.text)
+      );
 
       currencyAmounts.push({
-        value: amount,
-        currency: currency,
+        value: cleanAmount,
+        currency: result.currency,
         bbox: matchingWord?.bbox || { x0: 0, y0: 0, x1: 0, y1: 0, width: 0, height: 0 }
       });
 
       entities.push({
         type: 'currency',
-        value: `${currency}${amount}`,
+        value: `${result.currency}${cleanAmount}`,
         confidence: matchingWord?.confidence || 93,
         bbox: matchingWord?.bbox || { x0: 0, y0: 0, x1: 0, y1: 0, width: 0, height: 0 }
       });
-    }
+    });
 
     // Percentages
     const percentPattern = /\b(\d+\.?\d*)\s*%/g;
@@ -1114,32 +1235,69 @@ export class OCRService {
     structured: boolean,
     startTime: number
   ): Promise<OCRResult> {
-    const result = await Tesseract.recognize(fileBuffer, language, {
-      logger: (m) => {
-        if (m.status === 'recognizing text') {
-          console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
-        }
-      },
-    });
+    console.log(`Starting PaddleOCR processing with language: ${language}`);
 
+    // Call PaddleOCR
+    const paddleResult = await this.callPaddleOCR(fileBuffer, language);
     const processingTime = Date.now() - startTime;
 
+    // Transform PaddleOCR blocks to our format
+    const transformedBlocks: any[] = paddleResult.blocks.map((block: any, idx: number) => {
+      const bbox = {
+        x0: block.bbox.x,
+        y0: block.bbox.y,
+        x1: block.bbox.x + block.bbox.width,
+        y1: block.bbox.y + block.bbox.height,
+        width: block.bbox.width,
+        height: block.bbox.height
+      };
+
+      // Create a word from each block (PaddleOCR doesn't split into words by default)
+      const word = {
+        text: block.text,
+        confidence: block.confidence,
+        bbox
+      };
+
+      return {
+        text: block.text,
+        confidence: block.confidence,
+        bbox,
+        paragraphs: [{
+          text: block.text,
+          confidence: block.confidence,
+          bbox,
+          lines: [{
+            text: block.text,
+            confidence: block.confidence,
+            bbox,
+            words: [word],
+            baseline: bbox.y1
+          }]
+        }]
+      };
+    });
+
     // Calculate page dimensions
-    const pageWidth = Math.max(...(result.data.blocks || []).map(b => b.bbox.x1));
-    const pageHeight = Math.max(...(result.data.blocks || []).map(b => b.bbox.y1));
+    const pageWidth = transformedBlocks.length > 0
+      ? Math.max(...transformedBlocks.map(b => b.bbox.x1))
+      : 0;
+    const pageHeight = transformedBlocks.length > 0
+      ? Math.max(...transformedBlocks.map(b => b.bbox.y1))
+      : 0;
 
     // Count statistics
-    const allWords = result.data.words || [];
-    const allLines = result.data.lines || [];
-    const wordCount = allWords.length;
-    const lineCount = allLines.length;
-    const avgConfidence = allWords.reduce((sum, w) => sum + w.confidence, 0) / (wordCount || 1);
+    const wordCount = transformedBlocks.length;
+    const lineCount = transformedBlocks.length;
+    const avgConfidence = transformedBlocks.length > 0
+      ? transformedBlocks.reduce((sum, b) => sum + b.confidence, 0) / transformedBlocks.length
+      : 0;
 
     if (!structured) {
       // Return simple text result for backward compatibility
       return {
-        text: result.data.text.trim(),
-        confidence: result.data.confidence,
+        text: paddleResult.text.trim(),
+        confidence: avgConfidence,
         blocks: [],
         structure: {
           headings: [],
@@ -1156,20 +1314,18 @@ export class OCRService {
           processingTime,
           wordCount,
           lineCount,
-          avgConfidence,
-          textOrientation: (result.data as any).text_angle
+          avgConfidence
         },
       };
     }
 
     // Build enriched structured output
-    const rawBlocks = (result.data.blocks || []);
-    const enrichedBlocks = this.enrichBlocks(rawBlocks, pageWidth, pageHeight);
+    const enrichedBlocks = this.enrichBlocks(transformedBlocks, pageWidth, pageHeight);
     const structure = this.analyzeDocumentStructure(enrichedBlocks);
 
     return {
-      text: result.data.text.trim(),
-      confidence: result.data.confidence,
+      text: paddleResult.text.trim(),
+      confidence: avgConfidence,
       blocks: enrichedBlocks,
       structure,
       metadata: {
@@ -1177,8 +1333,7 @@ export class OCRService {
         processingTime,
         wordCount,
         lineCount,
-        avgConfidence,
-        textOrientation: (result.data as any).text_angle
+        avgConfidence
       },
     };
   }
@@ -1319,29 +1474,97 @@ export class OCRService {
       };
     }
 
-    // If no text found, return error structure
-    return {
-      text: 'PDF OCR requires image conversion. Text extraction returned no results.',
-      confidence: 0,
-      blocks: [],
-      structure: {
+    // If no text found, convert PDF to images and run OCR
+    console.log(`PDF has no extractable text. Converting ${pdfData.numpages} page(s) to images for OCR...`);
+
+    // Write PDF to temp file
+    const tempPdfPath = path.join(os.tmpdir(), `ocr_pdf_${Date.now()}.pdf`);
+    const tempImageDir = path.join(os.tmpdir(), `ocr_pdf_images_${Date.now()}`);
+
+    try {
+      await writeFile(tempPdfPath, fileBuffer);
+
+      // Convert PDF to PNG images using ghostscript
+      // gs -dNOPAUSE -sDEVICE=png16m -r300 -o output-%03d.png input.pdf
+      await execAsync(`mkdir -p "${tempImageDir}"`);
+      await execAsync(
+        `gs -dQUIET -dNOPAUSE -dBATCH -sDEVICE=png16m -r300 -o "${tempImageDir}/page-%03d.png" "${tempPdfPath}"`,
+        { maxBuffer: 50 * 1024 * 1024 } // 50MB buffer
+      );
+
+      // Process pages in parallel for better performance
+      // Limit concurrency to avoid overwhelming the system
+      const maxConcurrentPages = parseInt(process.env.PDF_PAGE_CONCURRENCY || '4', 10);
+      const pageNumbers = Array.from({ length: pdfData.numpages }, (_, i) => i + 1);
+
+      const processPage = async (pageNum: number): Promise<OCRResult | null> => {
+        const pagePath = path.join(tempImageDir, `page-${String(pageNum).padStart(3, '0')}.png`);
+        try {
+          const fs = await import('fs/promises');
+          const pageBuffer = await fs.readFile(pagePath);
+          const pageResult = await this.processImage(pageBuffer, language, structured, startTime);
+          console.log(`Processed PDF page ${pageNum}/${pdfData.numpages}`);
+          return pageResult;
+        } catch (pageError) {
+          console.error(`Error processing PDF page ${pageNum}:`, pageError);
+          return null;
+        }
+      };
+
+      // Process pages in batches for controlled parallelism
+      const pageResults: OCRResult[] = [];
+      for (let i = 0; i < pageNumbers.length; i += maxConcurrentPages) {
+        const batch = pageNumbers.slice(i, i + maxConcurrentPages);
+        const batchResults = await Promise.all(batch.map(processPage));
+        pageResults.push(...batchResults.filter((r): r is OCRResult => r !== null));
+      }
+
+      // Combine results from all pages
+      if (pageResults.length === 0) {
+        throw new Error('Failed to process any pages from PDF');
+      }
+
+      // Merge all page results
+      const combinedText = pageResults.map(r => r.text).join('\n\n');
+      const combinedBlocks = pageResults.flatMap(r => r.blocks);
+      const avgConfidence = pageResults.reduce((sum, r) => sum + r.confidence, 0) / pageResults.length;
+      const totalWords = pageResults.reduce((sum, r) => sum + r.metadata.wordCount, 0);
+      const totalLines = pageResults.reduce((sum, r) => sum + r.metadata.lineCount, 0);
+
+      // Analyze combined structure
+      const structure = structured ? this.analyzeDocumentStructure(combinedBlocks) : {
         headings: [],
         lists: [],
         tables: [],
         keyValuePairs: [],
         smartFields: [],
         notableData: { entities: [], currencyAmounts: [], dates: [], identifiers: [] },
-        documentType: 'unknown',
+        documentType: 'unknown' as const,
         pageLayout: { columns: 1, hasHeader: false, hasFooter: false, textDensity: 0 }
-      },
-      metadata: {
-        pageCount: pdfData.numpages,
-        language,
-        processingTime,
-        wordCount: 0,
-        lineCount: 0,
-        avgConfidence: 0
-      },
-    };
+      };
+
+      return {
+        text: combinedText,
+        confidence: avgConfidence,
+        blocks: structured ? combinedBlocks : [],
+        structure,
+        metadata: {
+          pageCount: pdfData.numpages,
+          language,
+          processingTime: Date.now() - startTime,
+          wordCount: totalWords,
+          lineCount: totalLines,
+          avgConfidence
+        },
+      };
+    } finally {
+      // Cleanup temp files
+      try {
+        await execAsync(`rm -rf "${tempImageDir}"`);
+        await unlink(tempPdfPath);
+      } catch (e) {
+        console.error('Error cleaning up temp files:', e);
+      }
+    }
   }
 }

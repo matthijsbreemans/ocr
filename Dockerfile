@@ -1,21 +1,39 @@
 FROM node:20-slim AS base
 
-# Install dependencies for Tesseract, Sharp, and PDF processing
+# Install dependencies for PaddleOCR, Sharp, and PDF processing
 RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    tesseract-ocr-eng \
-    tesseract-ocr-spa \
-    tesseract-ocr-fra \
-    tesseract-ocr-deu \
-    tesseract-ocr-ita \
-    tesseract-ocr-por \
     ghostscript \
     libvips-dev \
     python3 \
+    python3-pip \
+    python3-dev \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libgl1-mesa-glx \
     build-essential \
     openssl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+# Install PaddleOCR and dependencies
+# Pin numpy to 1.x for OpenCV compatibility
+RUN pip3 install --no-cache-dir --break-system-packages \
+    "numpy<2.0" \
+    paddlepaddle==2.6.2 \
+    paddleocr==2.7.3 \
+    shapely \
+    pyclipper \
+    imgaug \
+    lmdb \
+    tqdm \
+    visualdl \
+    rapidfuzz \
+    opencv-python-headless \
+    opencv-contrib-python-headless \
+    Pillow
 
 # Set working directory
 WORKDIR /app
@@ -29,6 +47,9 @@ RUN npm ci
 
 # Copy source code
 COPY . .
+
+# Make Python OCR script executable
+RUN chmod +x /app/paddle_ocr.py
 
 # Generate Prisma Client
 RUN npx prisma generate

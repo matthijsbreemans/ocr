@@ -11,6 +11,7 @@ const fileValidator = new FileValidationService();
 const POLL_INTERVAL = 5000; // 5 seconds
 const MAX_RETRIES = 3;
 const PROCESSING_TIMEOUT = 5 * 60 * 1000; // 5 minutes max per job
+const MAX_CONCURRENT_JOBS = parseInt(process.env.MAX_CONCURRENT_JOBS || '3', 10); // Process up to 3 jobs simultaneously
 
 async function processNextJob(): Promise<boolean> {
   try {
@@ -120,17 +121,42 @@ async function processNextJob(): Promise<boolean> {
 
 async function runWorker() {
   console.log('OCR Worker started');
+  console.log(`Max concurrent jobs: ${MAX_CONCURRENT_JOBS}`);
   console.log(`Polling for jobs every ${POLL_INTERVAL}ms`);
+
+  const activeJobs = new Set<Promise<void>>();
 
   while (true) {
     try {
-      const processed = await processNextJob();
-
-      if (!processed) {
-        // No jobs to process, wait before next poll
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+      // Clean up completed jobs
+      const completed: Promise<void>[] = [];
+      for (const job of activeJobs) {
+        const result = await Promise.race([
+          job.then(() => 'done'),
+          Promise.resolve('pending')
+        ]);
+        if (result === 'done') {
+          completed.push(job);
+        }
       }
-      // If job was processed, immediately check for next one
+      completed.forEach(job => activeJobs.delete(job));
+
+      // Start new jobs if we have capacity
+      if (activeJobs.size < MAX_CONCURRENT_JOBS) {
+        const processed = await processNextJob();
+
+        if (processed) {
+          // Job started, add tracking (but don't await)
+          const jobPromise = Promise.resolve();
+          activeJobs.add(jobPromise);
+        } else {
+          // No jobs available, wait before next poll
+          await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+        }
+      } else {
+        // At capacity, wait a bit before checking again
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
     } catch (error) {
       console.error('Worker error:', error);
       await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
