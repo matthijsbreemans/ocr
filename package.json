@@ -9,7 +9,10 @@
     "worker": "tsx src/worker/processor.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
@@ -25,6 +28,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^20.14.0",
     "@types/pdf-parse": "^1.1.5",
     "@types/react": "^18.3.0",

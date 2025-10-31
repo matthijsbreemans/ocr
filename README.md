@@ -16,6 +16,7 @@ A production-ready, queue-based OCR (Optical Character Recognition) API built as
 - ⏱️ **Timeout protection** - 5-minute limit prevents infinite processing
 - 🚫 **SSRF protection** - Webhook URLs validated to block internal network access
 - ⚡ **Real-time polling** - Automatic status updates every 2 seconds
+- 👨‍💼 **Admin Dashboard** - Monitor jobs, detect stuck processes, manage queue
 
 ## Architecture
 
@@ -284,10 +285,28 @@ Before deploying to production, implement:
 
 See [docs/SECURITY.md](docs/SECURITY.md) for complete production hardening checklist.
 
+## Admin Dashboard
+
+Access the admin dashboard at: **http://localhost:3040/admin**
+
+Features:
+- 📊 Real-time job statistics and monitoring
+- 📋 View all jobs with filtering by status
+- 🔍 Detect stuck jobs automatically (processing > 10 minutes)
+- 🔄 Retry failed or stuck jobs
+- 🗑️ Delete jobs from the queue
+- ⚡ Auto-refresh every 5 seconds
+- 📈 Performance metrics (avg processing time, recent activity)
+
+See [docs/ADMIN_DASHBOARD.md](docs/ADMIN_DASHBOARD.md) for complete documentation.
+
+⚠️ **Security Note**: Admin dashboard has no authentication by default. Implement auth before production deployment.
+
 ## 📚 Documentation
 
 All detailed documentation is located in the `/docs` folder:
 
+- [ADMIN_DASHBOARD.md](docs/ADMIN_DASHBOARD.md) - Admin dashboard and job management
 - [API_CONFIGURATION.md](docs/API_CONFIGURATION.md) - API URL configuration and setup
 - [ENHANCED_STRUCTURE.md](docs/ENHANCED_STRUCTURE.md) - Enhanced OCR output structure
 - [ENTITY_EXTRACTION.md](docs/ENTITY_EXTRACTION.md) - Entity extraction features

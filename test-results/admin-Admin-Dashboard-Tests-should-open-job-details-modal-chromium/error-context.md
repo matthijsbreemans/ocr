@@ -1,0 +1,699 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Admin Dashboard" [level=1] [ref=e5]
+      - generic [ref=e6]:
+        - generic [ref=e7] [cursor=pointer]:
+          - checkbox "Auto-refresh (5s)" [checked] [ref=e8]
+          - generic [ref=e9]: Auto-refresh (5s)
+        - button "Refresh Now" [ref=e10] [cursor=pointer]
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e13]: Total Jobs
+        - generic [ref=e14]: "63"
+      - generic [ref=e15]:
+        - generic [ref=e16]: Pending
+        - generic [ref=e17]: "10"
+      - generic [ref=e18]:
+        - generic [ref=e19]: Processing
+        - generic [ref=e20]: "0"
+      - generic [ref=e21]:
+        - generic [ref=e22]: Completed
+        - generic [ref=e23]: "49"
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: Failed Jobs
+        - generic [ref=e27]: "4"
+      - generic [ref=e28]:
+        - generic [ref=e29]: Last Hour Activity
+        - generic [ref=e30]: "13"
+      - generic [ref=e31]:
+        - generic [ref=e32]: Avg Processing Time
+        - generic [ref=e33]: 1m 56s
+    - navigation [ref=e36]:
+      - button "ALL" [ref=e37] [cursor=pointer]
+      - button "PENDING(10)" [ref=e38] [cursor=pointer]:
+        - text: PENDING
+        - generic [ref=e39]: (10)
+      - button "PROCESSING(0)" [ref=e40] [cursor=pointer]:
+        - text: PROCESSING
+        - generic [ref=e41]: (0)
+      - button "COMPLETED(49)" [ref=e42] [cursor=pointer]:
+        - text: COMPLETED
+        - generic [ref=e43]: (49)
+      - button "FAILED(4)" [ref=e44] [cursor=pointer]:
+        - text: FAILED
+        - generic [ref=e45]: (4)
+    - table [ref=e48]:
+      - rowgroup [ref=e49]:
+        - row "Status File Type Email Created Duration Actions" [ref=e50]:
+          - cell "Status" [ref=e51]
+          - cell "File" [ref=e52]
+          - cell "Type" [ref=e53]
+          - cell "Email" [ref=e54]
+          - cell "Created" [ref=e55]
+          - cell "Duration" [ref=e56]
+          - cell "Actions" [ref=e57]
+      - rowgroup [ref=e58]:
+        - row "PENDING metadata-test.png image/png contract metadata@example.com 10/31/2025, 6:27:56 PM 0s View Delete" [ref=e59]:
+          - cell "PENDING" [ref=e60]
+          - cell "metadata-test.png image/png" [ref=e61]:
+            - generic [ref=e62]: metadata-test.png
+            - generic [ref=e63]: image/png
+          - cell "contract" [ref=e64]
+          - cell "metadata@example.com" [ref=e65]
+          - cell "10/31/2025, 6:27:56 PM" [ref=e66]
+          - cell "0s" [ref=e67]
+          - cell "View Delete" [ref=e68]:
+            - button "View" [active] [ref=e69] [cursor=pointer]
+            - button "Delete" [ref=e70] [cursor=pointer]
+        - row "PENDING close-test.png image/png invoice close-test@example.com 10/31/2025, 6:27:56 PM 0s View Delete" [ref=e71]:
+          - cell "PENDING" [ref=e72]
+          - cell "close-test.png image/png" [ref=e73]:
+            - generic [ref=e74]: close-test.png
+            - generic [ref=e75]: image/png
+          - cell "invoice" [ref=e76]
+          - cell "close-test@example.com" [ref=e77]
+          - cell "10/31/2025, 6:27:56 PM" [ref=e78]
+          - cell "0s" [ref=e79]
+          - cell "View Delete" [ref=e80]:
+            - button "View" [ref=e81] [cursor=pointer]
+            - button "Delete" [ref=e82] [cursor=pointer]
+        - row "PENDING delete-test.png image/png invoice delete-test@example.com 10/31/2025, 6:27:56 PM 0s View Delete" [ref=e83]:
+          - cell "PENDING" [ref=e84]
+          - cell "delete-test.png image/png" [ref=e85]:
+            - generic [ref=e86]: delete-test.png
+            - generic [ref=e87]: image/png
+          - cell "invoice" [ref=e88]
+          - cell "delete-test@example.com" [ref=e89]
+          - cell "10/31/2025, 6:27:56 PM" [ref=e90]
+          - cell "0s" [ref=e91]
+          - cell "View Delete" [ref=e92]:
+            - button "View" [ref=e93] [cursor=pointer]
+            - button "Delete" [ref=e94] [cursor=pointer]
+        - row "PENDING modal-test.png image/png receipt modal-test@example.com 10/31/2025, 6:27:56 PM 0s View Delete" [ref=e95]:
+          - cell "PENDING" [ref=e96]
+          - cell "modal-test.png image/png" [ref=e97]:
+            - generic [ref=e98]: modal-test.png
+            - generic [ref=e99]: image/png
+          - cell "receipt" [ref=e100]
+          - cell "modal-test@example.com" [ref=e101]
+          - cell "10/31/2025, 6:27:56 PM" [ref=e102]
+          - cell "0s" [ref=e103]
+          - cell "View Delete" [ref=e104]:
+            - button "View" [ref=e105] [cursor=pointer]
+            - button "Delete" [ref=e106] [cursor=pointer]
+        - row "PENDING link-test.png image/png invoice link-test@example.com 10/31/2025, 6:27:56 PM 0s View Delete" [ref=e107]:
+          - cell "PENDING" [ref=e108]
+          - cell "link-test.png image/png" [ref=e109]:
+            - generic [ref=e110]: link-test.png
+            - generic [ref=e111]: image/png
+          - cell "invoice" [ref=e112]
+          - cell "link-test@example.com" [ref=e113]
+          - cell "10/31/2025, 6:27:56 PM" [ref=e114]
+          - cell "0s" [ref=e115]
+          - cell "View Delete" [ref=e116]:
+            - button "View" [ref=e117] [cursor=pointer]
+            - button "Delete" [ref=e118] [cursor=pointer]
+        - row "PENDING admin-test.png image/png invoice admin-test@example.com 10/31/2025, 6:27:55 PM 0s View Delete" [ref=e119]:
+          - cell "PENDING" [ref=e120]
+          - cell "admin-test.png image/png" [ref=e121]:
+            - generic [ref=e122]: admin-test.png
+            - generic [ref=e123]: image/png
+          - cell "invoice" [ref=e124]
+          - cell "admin-test@example.com" [ref=e125]
+          - cell "10/31/2025, 6:27:55 PM" [ref=e126]
+          - cell "0s" [ref=e127]
+          - cell "View Delete" [ref=e128]:
+            - button "View" [ref=e129] [cursor=pointer]
+            - button "Delete" [ref=e130] [cursor=pointer]
+        - row "PENDING status-test.png image/png invoice status-test@example.com 10/31/2025, 6:27:55 PM 0s View Delete" [ref=e131]:
+          - cell "PENDING" [ref=e132]
+          - cell "status-test.png image/png" [ref=e133]:
+            - generic [ref=e134]: status-test.png
+            - generic [ref=e135]: image/png
+          - cell "invoice" [ref=e136]
+          - cell "status-test@example.com" [ref=e137]
+          - cell "10/31/2025, 6:27:55 PM" [ref=e138]
+          - cell "0s" [ref=e139]
+          - cell "View Delete" [ref=e140]:
+            - button "View" [ref=e141] [cursor=pointer]
+            - button "Delete" [ref=e142] [cursor=pointer]
+        - row "PENDING link-test.png image/png invoice link-test@example.com 10/31/2025, 6:21:24 PM 6m 31s View Delete" [ref=e143]:
+          - cell "PENDING" [ref=e144]
+          - cell "link-test.png image/png" [ref=e145]:
+            - generic [ref=e146]: link-test.png
+            - generic [ref=e147]: image/png
+          - cell "invoice" [ref=e148]
+          - cell "link-test@example.com" [ref=e149]
+          - cell "10/31/2025, 6:21:24 PM" [ref=e150]
+          - cell "6m 31s" [ref=e151]
+          - cell "View Delete" [ref=e152]:
+            - button "View" [ref=e153] [cursor=pointer]
+            - button "Delete" [ref=e154] [cursor=pointer]
+        - row "PENDING admin-test.png image/png invoice admin-test@example.com 10/31/2025, 6:21:24 PM 6m 31s View Delete" [ref=e155]:
+          - cell "PENDING" [ref=e156]
+          - cell "admin-test.png image/png" [ref=e157]:
+            - generic [ref=e158]: admin-test.png
+            - generic [ref=e159]: image/png
+          - cell "invoice" [ref=e160]
+          - cell "admin-test@example.com" [ref=e161]
+          - cell "10/31/2025, 6:21:24 PM" [ref=e162]
+          - cell "6m 31s" [ref=e163]
+          - cell "View Delete" [ref=e164]:
+            - button "View" [ref=e165] [cursor=pointer]
+            - button "Delete" [ref=e166] [cursor=pointer]
+        - row "PENDING close-test.png image/png invoice close-test@example.com 10/31/2025, 6:21:24 PM 6m 31s View Delete" [ref=e167]:
+          - cell "PENDING" [ref=e168]
+          - cell "close-test.png image/png" [ref=e169]:
+            - generic [ref=e170]: close-test.png
+            - generic [ref=e171]: image/png
+          - cell "invoice" [ref=e172]
+          - cell "close-test@example.com" [ref=e173]
+          - cell "10/31/2025, 6:21:24 PM" [ref=e174]
+          - cell "6m 31s" [ref=e175]
+          - cell "View Delete" [ref=e176]:
+            - button "View" [ref=e177] [cursor=pointer]
+            - button "Delete" [ref=e178] [cursor=pointer]
+        - row "COMPLETED metadata-test.png image/png contract metadata@example.com 10/31/2025, 6:21:24 PM 59s View Delete" [ref=e179]:
+          - cell "COMPLETED" [ref=e180]
+          - cell "metadata-test.png image/png" [ref=e181]:
+            - generic [ref=e182]: metadata-test.png
+            - generic [ref=e183]: image/png
+          - cell "contract" [ref=e184]
+          - cell "metadata@example.com" [ref=e185]
+          - cell "10/31/2025, 6:21:24 PM" [ref=e186]
+          - cell "59s" [ref=e187]
+          - cell "View Delete" [ref=e188]:
+            - button "View" [ref=e189] [cursor=pointer]
+            - button "Delete" [ref=e190] [cursor=pointer]
+        - row "COMPLETED modal-test.png image/png receipt modal-test@example.com 10/31/2025, 6:21:24 PM 55s View Delete" [ref=e191]:
+          - cell "COMPLETED" [ref=e192]
+          - cell "modal-test.png image/png" [ref=e193]:
+            - generic [ref=e194]: modal-test.png
+            - generic [ref=e195]: image/png
+          - cell "receipt" [ref=e196]
+          - cell "modal-test@example.com" [ref=e197]
+          - cell "10/31/2025, 6:21:24 PM" [ref=e198]
+          - cell "55s" [ref=e199]
+          - cell "View Delete" [ref=e200]:
+            - button "View" [ref=e201] [cursor=pointer]
+            - button "Delete" [ref=e202] [cursor=pointer]
+        - row "COMPLETED status-test.png image/png invoice status-test@example.com 10/31/2025, 6:21:24 PM 52s View Delete" [ref=e203]:
+          - cell "COMPLETED" [ref=e204]
+          - cell "status-test.png image/png" [ref=e205]:
+            - generic [ref=e206]: status-test.png
+            - generic [ref=e207]: image/png
+          - cell "invoice" [ref=e208]
+          - cell "status-test@example.com" [ref=e209]
+          - cell "10/31/2025, 6:21:24 PM" [ref=e210]
+          - cell "52s" [ref=e211]
+          - cell "View Delete" [ref=e212]:
+            - button "View" [ref=e213] [cursor=pointer]
+            - button "Delete" [ref=e214] [cursor=pointer]
+        - row "COMPLETED INV-NLD-261985-79808-85-1.pdf application/pdf gsdf dsfg@fgsdfg.nl 10/31/2025, 5:18:25 PM 19m 33s View Delete" [ref=e215]:
+          - cell "COMPLETED" [ref=e216]
+          - cell "INV-NLD-261985-79808-85-1.pdf application/pdf" [ref=e217]:
+            - generic [ref=e218]: INV-NLD-261985-79808-85-1.pdf
+            - generic [ref=e219]: application/pdf
+          - cell "gsdf" [ref=e220]
+          - cell "dsfg@fgsdfg.nl" [ref=e221]
+          - cell "10/31/2025, 5:18:25 PM" [ref=e222]
+          - cell "19m 33s" [ref=e223]
+          - cell "View Delete" [ref=e224]:
+            - button "View" [ref=e225] [cursor=pointer]
+            - button "Delete" [ref=e226] [cursor=pointer]
+        - row "COMPLETED test.png image/png invoice test@example.com 10/31/2025, 5:07:03 PM 19m 25s View Delete" [ref=e227]:
+          - cell "COMPLETED" [ref=e228]
+          - cell "test.png image/png" [ref=e229]:
+            - generic [ref=e230]: test.png
+            - generic [ref=e231]: image/png
+          - cell "invoice" [ref=e232]
+          - cell "test@example.com" [ref=e233]
+          - cell "10/31/2025, 5:07:03 PM" [ref=e234]
+          - cell "19m 25s" [ref=e235]
+          - cell "View Delete" [ref=e236]:
+            - button "View" [ref=e237] [cursor=pointer]
+            - button "Delete" [ref=e238] [cursor=pointer]
+        - row "COMPLETED test.jpg image/jpeg invoice test@example.com 10/31/2025, 5:07:03 PM 19m 22s View Delete" [ref=e239]:
+          - cell "COMPLETED" [ref=e240]
+          - cell "test.jpg image/jpeg" [ref=e241]:
+            - generic [ref=e242]: test.jpg
+            - generic [ref=e243]: image/jpeg
+          - cell "invoice" [ref=e244]
+          - cell "test@example.com" [ref=e245]
+          - cell "10/31/2025, 5:07:03 PM" [ref=e246]
+          - cell "19m 22s" [ref=e247]
+          - cell "View Delete" [ref=e248]:
+            - button "View" [ref=e249] [cursor=pointer]
+            - button "Delete" [ref=e250] [cursor=pointer]
+        - row "FAILED test.webp image/webp invoice test@example.com 10/31/2025, 5:07:03 PM 17m 57s View Retry Delete" [ref=e251]:
+          - cell "FAILED" [ref=e252]
+          - cell "test.webp image/webp" [ref=e253]:
+            - generic [ref=e254]: test.webp
+            - generic [ref=e255]: image/webp
+          - cell "invoice" [ref=e256]
+          - cell "test@example.com" [ref=e257]
+          - cell "10/31/2025, 5:07:03 PM" [ref=e258]
+          - cell "17m 57s" [ref=e259]
+          - cell "View Retry Delete" [ref=e260]:
+            - button "View" [ref=e261] [cursor=pointer]
+            - button "Retry" [ref=e262] [cursor=pointer]
+            - button "Delete" [ref=e263] [cursor=pointer]
+        - row "COMPLETED test.png image/png invoice test@example.com 10/31/2025, 5:07:03 PM 9m 48s View Delete" [ref=e264]:
+          - cell "COMPLETED" [ref=e265]
+          - cell "test.png image/png" [ref=e266]:
+            - generic [ref=e267]: test.png
+            - generic [ref=e268]: image/png
+          - cell "invoice" [ref=e269]
+          - cell "test@example.com" [ref=e270]
+          - cell "10/31/2025, 5:07:03 PM" [ref=e271]
+          - cell "9m 48s" [ref=e272]
+          - cell "View Delete" [ref=e273]:
+            - button "View" [ref=e274] [cursor=pointer]
+            - button "Delete" [ref=e275] [cursor=pointer]
+        - row "COMPLETED test.png image/png invoice test@example.com 10/31/2025, 5:07:02 PM 9m 44s View Delete" [ref=e276]:
+          - cell "COMPLETED" [ref=e277]
+          - cell "test.png image/png" [ref=e278]:
+            - generic [ref=e279]: test.png
+            - generic [ref=e280]: image/png
+          - cell "invoice" [ref=e281]
+          - cell "test@example.com" [ref=e282]
+          - cell "10/31/2025, 5:07:02 PM" [ref=e283]
+          - cell "9m 44s" [ref=e284]
+          - cell "View Delete" [ref=e285]:
+            - button "View" [ref=e286] [cursor=pointer]
+            - button "Delete" [ref=e287] [cursor=pointer]
+        - row "COMPLETED test.png image/png invoice test@example.com 10/31/2025, 5:07:02 PM 9m 41s View Delete" [ref=e288]:
+          - cell "COMPLETED" [ref=e289]
+          - cell "test.png image/png" [ref=e290]:
+            - generic [ref=e291]: test.png
+            - generic [ref=e292]: image/png
+          - cell "invoice" [ref=e293]
+          - cell "test@example.com" [ref=e294]
+          - cell "10/31/2025, 5:07:02 PM" [ref=e295]
+          - cell "9m 41s" [ref=e296]
+          - cell "View Delete" [ref=e297]:
+            - button "View" [ref=e298] [cursor=pointer]
+            - button "Delete" [ref=e299] [cursor=pointer]
+        - row "COMPLETED test.png image/png invoice test@example.com 10/31/2025, 5:07:02 PM 39s View Delete" [ref=e300]:
+          - cell "COMPLETED" [ref=e301]
+          - cell "test.png image/png" [ref=e302]:
+            - generic [ref=e303]: test.png
+            - generic [ref=e304]: image/png
+          - cell "invoice" [ref=e305]
+          - cell "test@example.com" [ref=e306]
+          - cell "10/31/2025, 5:07:02 PM" [ref=e307]
+          - cell "39s" [ref=e308]
+          - cell "View Delete" [ref=e309]:
+            - button "View" [ref=e310] [cursor=pointer]
+            - button "Delete" [ref=e311] [cursor=pointer]
+        - row "COMPLETED test.png image/png invoice test@example.com 10/31/2025, 5:07:02 PM 35s View Delete" [ref=e312]:
+          - cell "COMPLETED" [ref=e313]
+          - cell "test.png image/png" [ref=e314]:
+            - generic [ref=e315]: test.png
+            - generic [ref=e316]: image/png
+          - cell "invoice" [ref=e317]
+          - cell "test@example.com" [ref=e318]
+          - cell "10/31/2025, 5:07:02 PM" [ref=e319]
+          - cell "35s" [ref=e320]
+          - cell "View Delete" [ref=e321]:
+            - button "View" [ref=e322] [cursor=pointer]
+            - button "Delete" [ref=e323] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Lkjkjljljk lkdsfjlksjdf@sfgdsfg.nl 10/30/2025, 4:55:30 PM 3s View Delete" [ref=e324]:
+          - cell "COMPLETED" [ref=e325]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e326]:
+            - generic [ref=e327]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e328]: application/pdf
+          - cell "Lkjkjljljk" [ref=e329]
+          - cell "lkdsfjlksjdf@sfgdsfg.nl" [ref=e330]
+          - cell "10/30/2025, 4:55:30 PM" [ref=e331]
+          - cell "3s" [ref=e332]
+          - cell "View Delete" [ref=e333]:
+            - button "View" [ref=e334] [cursor=pointer]
+            - button "Delete" [ref=e335] [cursor=pointer]
+        - row "COMPLETED INV-NLD-261985-79808-85-1.pdf application/pdf vxczv vzxcvsadf@gfdsgd.nl 10/28/2025, 4:45:45 PM 1s View Delete" [ref=e336]:
+          - cell "COMPLETED" [ref=e337]
+          - cell "INV-NLD-261985-79808-85-1.pdf application/pdf" [ref=e338]:
+            - generic [ref=e339]: INV-NLD-261985-79808-85-1.pdf
+            - generic [ref=e340]: application/pdf
+          - cell "vxczv" [ref=e341]
+          - cell "vzxcvsadf@gfdsgd.nl" [ref=e342]
+          - cell "10/28/2025, 4:45:45 PM" [ref=e343]
+          - cell "1s" [ref=e344]
+          - cell "View Delete" [ref=e345]:
+            - button "View" [ref=e346] [cursor=pointer]
+            - button "Delete" [ref=e347] [cursor=pointer]
+        - row "COMPLETED Scan_202510_28_121209.pdf application/pdf asdf saf@dgsdg.nl 10/28/2025, 4:43:03 PM 1m 23s View Delete" [ref=e348]:
+          - cell "COMPLETED" [ref=e349]
+          - cell "Scan_202510_28_121209.pdf application/pdf" [ref=e350]:
+            - generic [ref=e351]: Scan_202510_28_121209.pdf
+            - generic [ref=e352]: application/pdf
+          - cell "asdf" [ref=e353]
+          - cell "saf@dgsdg.nl" [ref=e354]
+          - cell "10/28/2025, 4:43:03 PM" [ref=e355]
+          - cell "1m 23s" [ref=e356]
+          - cell "View Delete" [ref=e357]:
+            - button "View" [ref=e358] [cursor=pointer]
+            - button "Delete" [ref=e359] [cursor=pointer]
+        - row "COMPLETED Scan_202510_28_121209.pdf application/pdf gsdgf dsfg@hgfdh.nl 10/28/2025, 4:39:46 PM 2s View Delete" [ref=e360]:
+          - cell "COMPLETED" [ref=e361]
+          - cell "Scan_202510_28_121209.pdf application/pdf" [ref=e362]:
+            - generic [ref=e363]: Scan_202510_28_121209.pdf
+            - generic [ref=e364]: application/pdf
+          - cell "gsdgf" [ref=e365]
+          - cell "dsfg@hgfdh.nl" [ref=e366]
+          - cell "10/28/2025, 4:39:46 PM" [ref=e367]
+          - cell "2s" [ref=e368]
+          - cell "View Delete" [ref=e369]:
+            - button "View" [ref=e370] [cursor=pointer]
+            - button "Delete" [ref=e371] [cursor=pointer]
+        - row "COMPLETED Scan_202510_28_121209.pdf application/pdf fas asdf@gsdfg.nl 10/28/2025, 4:24:22 PM 4s View Delete" [ref=e372]:
+          - cell "COMPLETED" [ref=e373]
+          - cell "Scan_202510_28_121209.pdf application/pdf" [ref=e374]:
+            - generic [ref=e375]: Scan_202510_28_121209.pdf
+            - generic [ref=e376]: application/pdf
+          - cell "fas" [ref=e377]
+          - cell "asdf@gsdfg.nl" [ref=e378]
+          - cell "10/28/2025, 4:24:22 PM" [ref=e379]
+          - cell "4s" [ref=e380]
+          - cell "View Delete" [ref=e381]:
+            - button "View" [ref=e382] [cursor=pointer]
+            - button "Delete" [ref=e383] [cursor=pointer]
+        - row "COMPLETED Screenshot 2024-02-06 172730.png image/png xczv xczzxc@sdfgsd.nl 10/28/2025, 4:22:58 PM 58s View Delete" [ref=e384]:
+          - cell "COMPLETED" [ref=e385]
+          - cell "Screenshot 2024-02-06 172730.png image/png" [ref=e386]:
+            - generic [ref=e387]: Screenshot 2024-02-06 172730.png
+            - generic [ref=e388]: image/png
+          - cell "xczv" [ref=e389]
+          - cell "xczzxc@sdfgsd.nl" [ref=e390]
+          - cell "10/28/2025, 4:22:58 PM" [ref=e391]
+          - cell "58s" [ref=e392]
+          - cell "View Delete" [ref=e393]:
+            - button "View" [ref=e394] [cursor=pointer]
+            - button "Delete" [ref=e395] [cursor=pointer]
+        - row "FAILED Screenshot 2024-02-06 172730.png image/png asdf fdsaf@gfdsg.nl 10/28/2025, 3:36:25 PM 7s View Retry Delete" [ref=e396]:
+          - cell "FAILED" [ref=e397]
+          - cell "Screenshot 2024-02-06 172730.png image/png" [ref=e398]:
+            - generic [ref=e399]: Screenshot 2024-02-06 172730.png
+            - generic [ref=e400]: image/png
+          - cell "asdf" [ref=e401]
+          - cell "fdsaf@gfdsg.nl" [ref=e402]
+          - cell "10/28/2025, 3:36:25 PM" [ref=e403]
+          - cell "7s" [ref=e404]
+          - cell "View Retry Delete" [ref=e405]:
+            - button "View" [ref=e406] [cursor=pointer]
+            - button "Retry" [ref=e407] [cursor=pointer]
+            - button "Delete" [ref=e408] [cursor=pointer]
+        - row "FAILED Screenshot 2024-02-02 165817.png image/png fasd safSADF@gfsdgd.nl 10/24/2025, 3:18:41 PM 5s View Retry Delete" [ref=e409]:
+          - cell "FAILED" [ref=e410]
+          - cell "Screenshot 2024-02-02 165817.png image/png" [ref=e411]:
+            - generic [ref=e412]: Screenshot 2024-02-02 165817.png
+            - generic [ref=e413]: image/png
+          - cell "fasd" [ref=e414]
+          - cell "safSADF@gfsdgd.nl" [ref=e415]
+          - cell "10/24/2025, 3:18:41 PM" [ref=e416]
+          - cell "5s" [ref=e417]
+          - cell "View Retry Delete" [ref=e418]:
+            - button "View" [ref=e419] [cursor=pointer]
+            - button "Retry" [ref=e420] [cursor=pointer]
+            - button "Delete" [ref=e421] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Dfsgdg dsgsdg@fsgdfg.nl 10/24/2025, 11:27:24 AM 2s View Delete" [ref=e422]:
+          - cell "COMPLETED" [ref=e423]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e424]:
+            - generic [ref=e425]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e426]: application/pdf
+          - cell "Dfsgdg" [ref=e427]
+          - cell "dsgsdg@fsgdfg.nl" [ref=e428]
+          - cell "10/24/2025, 11:27:24 AM" [ref=e429]
+          - cell "2s" [ref=e430]
+          - cell "View Delete" [ref=e431]:
+            - button "View" [ref=e432] [cursor=pointer]
+            - button "Delete" [ref=e433] [cursor=pointer]
+        - row "FAILED IMG_0008.jpeg image/jpeg Sgdfg dgsdg@sfdgds.nl 10/24/2025, 11:26:56 AM 4s View Retry Delete" [ref=e434]:
+          - cell "FAILED" [ref=e435]
+          - cell "IMG_0008.jpeg image/jpeg" [ref=e436]:
+            - generic [ref=e437]: IMG_0008.jpeg
+            - generic [ref=e438]: image/jpeg
+          - cell "Sgdfg" [ref=e439]
+          - cell "dgsdg@sfdgds.nl" [ref=e440]
+          - cell "10/24/2025, 11:26:56 AM" [ref=e441]
+          - cell "4s" [ref=e442]
+          - cell "View Retry Delete" [ref=e443]:
+            - button "View" [ref=e444] [cursor=pointer]
+            - button "Retry" [ref=e445] [cursor=pointer]
+            - button "Delete" [ref=e446] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf hgjk hjgkghj@gfhfdgh.nl 10/24/2025, 7:52:23 AM 0s View Delete" [ref=e447]:
+          - cell "COMPLETED" [ref=e448]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e449]:
+            - generic [ref=e450]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e451]: application/pdf
+          - cell "hgjk" [ref=e452]
+          - cell "hjgkghj@gfhfdgh.nl" [ref=e453]
+          - cell "10/24/2025, 7:52:23 AM" [ref=e454]
+          - cell "0s" [ref=e455]
+          - cell "View Delete" [ref=e456]:
+            - button "View" [ref=e457] [cursor=pointer]
+            - button "Delete" [ref=e458] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf dsgs dfgsd@gdfsg.nl 10/24/2025, 7:47:19 AM 0s View Delete" [ref=e459]:
+          - cell "COMPLETED" [ref=e460]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e461]:
+            - generic [ref=e462]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e463]: application/pdf
+          - cell "dsgs" [ref=e464]
+          - cell "dfgsd@gdfsg.nl" [ref=e465]
+          - cell "10/24/2025, 7:47:19 AM" [ref=e466]
+          - cell "0s" [ref=e467]
+          - cell "View Delete" [ref=e468]:
+            - button "View" [ref=e469] [cursor=pointer]
+            - button "Delete" [ref=e470] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf hfdghfdg gdfhfgh@gsdgsd.nl 10/24/2025, 7:46:38 AM 1s View Delete" [ref=e471]:
+          - cell "COMPLETED" [ref=e472]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e473]:
+            - generic [ref=e474]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e475]: application/pdf
+          - cell "hfdghfdg" [ref=e476]
+          - cell "gdfhfgh@gsdgsd.nl" [ref=e477]
+          - cell "10/24/2025, 7:46:38 AM" [ref=e478]
+          - cell "1s" [ref=e479]
+          - cell "View Delete" [ref=e480]:
+            - button "View" [ref=e481] [cursor=pointer]
+            - button "Delete" [ref=e482] [cursor=pointer]
+        - row "COMPLETED testpdf.pdf application/pdf dsfg dsgfsdfg@gdfsg.nl 10/24/2025, 7:44:53 AM 1s View Delete" [ref=e483]:
+          - cell "COMPLETED" [ref=e484]
+          - cell "testpdf.pdf application/pdf" [ref=e485]:
+            - generic [ref=e486]: testpdf.pdf
+            - generic [ref=e487]: application/pdf
+          - cell "dsfg" [ref=e488]
+          - cell "dsgfsdfg@gdfsg.nl" [ref=e489]
+          - cell "10/24/2025, 7:44:53 AM" [ref=e490]
+          - cell "1s" [ref=e491]
+          - cell "View Delete" [ref=e492]:
+            - button "View" [ref=e493] [cursor=pointer]
+            - button "Delete" [ref=e494] [cursor=pointer]
+        - row "COMPLETED testpdf.pdf application/pdf sdfg gfdg@gfdsg.nl 10/24/2025, 12:56:53 AM 2s View Delete" [ref=e495]:
+          - cell "COMPLETED" [ref=e496]
+          - cell "testpdf.pdf application/pdf" [ref=e497]:
+            - generic [ref=e498]: testpdf.pdf
+            - generic [ref=e499]: application/pdf
+          - cell "sdfg" [ref=e500]
+          - cell "gfdg@gfdsg.nl" [ref=e501]
+          - cell "10/24/2025, 12:56:53 AM" [ref=e502]
+          - cell "2s" [ref=e503]
+          - cell "View Delete" [ref=e504]:
+            - button "View" [ref=e505] [cursor=pointer]
+            - button "Delete" [ref=e506] [cursor=pointer]
+        - row "COMPLETED testpdf.pdf application/pdf test test@terst.nl 10/24/2025, 12:12:57 AM 3s View Delete" [ref=e507]:
+          - cell "COMPLETED" [ref=e508]
+          - cell "testpdf.pdf application/pdf" [ref=e509]:
+            - generic [ref=e510]: testpdf.pdf
+            - generic [ref=e511]: application/pdf
+          - cell "test" [ref=e512]
+          - cell "test@terst.nl" [ref=e513]
+          - cell "10/24/2025, 12:12:57 AM" [ref=e514]
+          - cell "3s" [ref=e515]
+          - cell "View Delete" [ref=e516]:
+            - button "View" [ref=e517] [cursor=pointer]
+            - button "Delete" [ref=e518] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Jhgjkg hhkhjk@test.nl 10/22/2025, 5:42:41 PM 3s View Delete" [ref=e519]:
+          - cell "COMPLETED" [ref=e520]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e521]:
+            - generic [ref=e522]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e523]: application/pdf
+          - cell "Jhgjkg" [ref=e524]
+          - cell "hhkhjk@test.nl" [ref=e525]
+          - cell "10/22/2025, 5:42:41 PM" [ref=e526]
+          - cell "3s" [ref=e527]
+          - cell "View Delete" [ref=e528]:
+            - button "View" [ref=e529] [cursor=pointer]
+            - button "Delete" [ref=e530] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Invoice test@test.nl 10/22/2025, 4:45:30 PM 0s View Delete" [ref=e531]:
+          - cell "COMPLETED" [ref=e532]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e533]:
+            - generic [ref=e534]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e535]: application/pdf
+          - cell "Invoice" [ref=e536]
+          - cell "test@test.nl" [ref=e537]
+          - cell "10/22/2025, 4:45:30 PM" [ref=e538]
+          - cell "0s" [ref=e539]
+          - cell "View Delete" [ref=e540]:
+            - button "View" [ref=e541] [cursor=pointer]
+            - button "Delete" [ref=e542] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Sadf safd@asdfs.nl 10/22/2025, 2:50:45 PM 2s View Delete" [ref=e543]:
+          - cell "COMPLETED" [ref=e544]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e545]:
+            - generic [ref=e546]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e547]: application/pdf
+          - cell "Sadf" [ref=e548]
+          - cell "safd@asdfs.nl" [ref=e549]
+          - cell "10/22/2025, 2:50:45 PM" [ref=e550]
+          - cell "2s" [ref=e551]
+          - cell "View Delete" [ref=e552]:
+            - button "View" [ref=e553] [cursor=pointer]
+            - button "Delete" [ref=e554] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Sadfs safsaf@sfasf.nl 10/22/2025, 2:43:53 PM 0s View Delete" [ref=e555]:
+          - cell "COMPLETED" [ref=e556]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e557]:
+            - generic [ref=e558]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e559]: application/pdf
+          - cell "Sadfs" [ref=e560]
+          - cell "safsaf@sfasf.nl" [ref=e561]
+          - cell "10/22/2025, 2:43:53 PM" [ref=e562]
+          - cell "0s" [ref=e563]
+          - cell "View Delete" [ref=e564]:
+            - button "View" [ref=e565] [cursor=pointer]
+            - button "Delete" [ref=e566] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Sadf safdsadf@fasfas.nl 10/22/2025, 2:39:19 PM 1s View Delete" [ref=e567]:
+          - cell "COMPLETED" [ref=e568]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e569]:
+            - generic [ref=e570]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e571]: application/pdf
+          - cell "Sadf" [ref=e572]
+          - cell "safdsadf@fasfas.nl" [ref=e573]
+          - cell "10/22/2025, 2:39:19 PM" [ref=e574]
+          - cell "1s" [ref=e575]
+          - cell "View Delete" [ref=e576]:
+            - button "View" [ref=e577] [cursor=pointer]
+            - button "Delete" [ref=e578] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Fsgds dsfgsd@fgsdfg.nl 10/22/2025, 2:01:18 PM 1s View Delete" [ref=e579]:
+          - cell "COMPLETED" [ref=e580]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e581]:
+            - generic [ref=e582]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e583]: application/pdf
+          - cell "Fsgds" [ref=e584]
+          - cell "dsfgsd@fgsdfg.nl" [ref=e585]
+          - cell "10/22/2025, 2:01:18 PM" [ref=e586]
+          - cell "1s" [ref=e587]
+          - cell "View Delete" [ref=e588]:
+            - button "View" [ref=e589] [cursor=pointer]
+            - button "Delete" [ref=e590] [cursor=pointer]
+        - row "COMPLETED FactuurDevstack-2025-010.pdf application/pdf Invoice gfdsgsfd@gdgsdfg.nl 10/22/2025, 12:14:54 PM 1s View Delete" [ref=e591]:
+          - cell "COMPLETED" [ref=e592]
+          - cell "FactuurDevstack-2025-010.pdf application/pdf" [ref=e593]:
+            - generic [ref=e594]: FactuurDevstack-2025-010.pdf
+            - generic [ref=e595]: application/pdf
+          - cell "Invoice" [ref=e596]
+          - cell "gfdsgsfd@gdgsdfg.nl" [ref=e597]
+          - cell "10/22/2025, 12:14:54 PM" [ref=e598]
+          - cell "1s" [ref=e599]
+          - cell "View Delete" [ref=e600]:
+            - button "View" [ref=e601] [cursor=pointer]
+            - button "Delete" [ref=e602] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Kpn sfsfsf@sdgsdf.nl 10/22/2025, 12:06:48 PM 3s View Delete" [ref=e603]:
+          - cell "COMPLETED" [ref=e604]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e605]:
+            - generic [ref=e606]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e607]: application/pdf
+          - cell "Kpn" [ref=e608]
+          - cell "sfsfsf@sdgsdf.nl" [ref=e609]
+          - cell "10/22/2025, 12:06:48 PM" [ref=e610]
+          - cell "3s" [ref=e611]
+          - cell "View Delete" [ref=e612]:
+            - button "View" [ref=e613] [cursor=pointer]
+            - button "Delete" [ref=e614] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Ssdfs fsfsf@fsdfgsd.nl 10/22/2025, 12:04:46 PM 0s View Delete" [ref=e615]:
+          - cell "COMPLETED" [ref=e616]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e617]:
+            - generic [ref=e618]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e619]: application/pdf
+          - cell "Ssdfs" [ref=e620]
+          - cell "fsfsf@fsdfgsd.nl" [ref=e621]
+          - cell "10/22/2025, 12:04:46 PM" [ref=e622]
+          - cell "0s" [ref=e623]
+          - cell "View Delete" [ref=e624]:
+            - button "View" [ref=e625] [cursor=pointer]
+            - button "Delete" [ref=e626] [cursor=pointer]
+        - row "COMPLETED contract_80327.pdf application/pdf Sdfgfdg dsfgsdfg@sgsdfg.nl 10/22/2025, 11:46:37 AM 1s View Delete" [ref=e627]:
+          - cell "COMPLETED" [ref=e628]
+          - cell "contract_80327.pdf application/pdf" [ref=e629]:
+            - generic [ref=e630]: contract_80327.pdf
+            - generic [ref=e631]: application/pdf
+          - cell "Sdfgfdg" [ref=e632]
+          - cell "dsfgsdfg@sgsdfg.nl" [ref=e633]
+          - cell "10/22/2025, 11:46:37 AM" [ref=e634]
+          - cell "1s" [ref=e635]
+          - cell "View Delete" [ref=e636]:
+            - button "View" [ref=e637] [cursor=pointer]
+            - button "Delete" [ref=e638] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Invoice dsafljlkj@asfasdf.eu 10/22/2025, 11:09:43 AM 1s View Delete" [ref=e639]:
+          - cell "COMPLETED" [ref=e640]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e641]:
+            - generic [ref=e642]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e643]: application/pdf
+          - cell "Invoice" [ref=e644]
+          - cell "dsafljlkj@asfasdf.eu" [ref=e645]
+          - cell "10/22/2025, 11:09:43 AM" [ref=e646]
+          - cell "1s" [ref=e647]
+          - cell "View Delete" [ref=e648]:
+            - button "View" [ref=e649] [cursor=pointer]
+            - button "Delete" [ref=e650] [cursor=pointer]
+        - row "COMPLETED 21520738_09102025_149694415_NL.pdf application/pdf Invoice test@test.nl 10/22/2025, 11:05:07 AM 0s View Delete" [ref=e651]:
+          - cell "COMPLETED" [ref=e652]
+          - cell "21520738_09102025_149694415_NL.pdf application/pdf" [ref=e653]:
+            - generic [ref=e654]: 21520738_09102025_149694415_NL.pdf
+            - generic [ref=e655]: application/pdf
+          - cell "Invoice" [ref=e656]
+          - cell "test@test.nl" [ref=e657]
+          - cell "10/22/2025, 11:05:07 AM" [ref=e658]
+          - cell "0s" [ref=e659]
+          - cell "View Delete" [ref=e660]:
+            - button "View" [ref=e661] [cursor=pointer]
+            - button "Delete" [ref=e662] [cursor=pointer]
+    - generic [ref=e665]:
+      - generic [ref=e666]:
+        - heading "Job Details" [level=2] [ref=e667]
+        - button [ref=e668] [cursor=pointer]:
+          - img [ref=e669]
+      - generic [ref=e671]:
+        - generic [ref=e672]:
+          - text: Job ID
+          - generic [ref=e673]: 0268f6b5-f130-4413-8093-e48f4841f490
+        - generic [ref=e674]:
+          - text: Status
+          - generic [ref=e675]: PENDING
+        - generic [ref=e676]:
+          - text: File Name
+          - generic [ref=e677]: metadata-test.png
+        - generic [ref=e678]:
+          - text: Document Type
+          - generic [ref=e679]: contract
+        - generic [ref=e680]:
+          - text: Email
+          - generic [ref=e681]: metadata@example.com
+        - generic [ref=e682]:
+          - text: Webhook URL
+          - generic [ref=e683]: https://example.com/webhook
+        - generic [ref=e684]:
+          - text: Created At
+          - generic [ref=e685]: 10/31/2025, 6:27:56 PM
+        - generic [ref=e686]:
+          - text: Processing Time
+          - generic [ref=e687]: 0s
+      - generic [ref=e688]:
+        - button "View Status Page" [ref=e689] [cursor=pointer]
+        - button "Delete Job" [ref=e690] [cursor=pointer]
+  - alert [ref=e691]
+```

@@ -1,0 +1,6 @@
+Hello World
+Invoice #12345
+Date: 2025-10-31
+Amount: $1,234.56
+Email: test@example.com
+Phone: +1-555-0123
