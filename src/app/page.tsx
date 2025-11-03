@@ -66,7 +66,7 @@ export default function Home() {
           </div>
 
           {/* Sidebar */}
-          <div className={`space-y-6 ${!showInfo && 'hidden lg:block'}`}>
+          <div className={`space-y-6 ${!showInfo && 'hidden'}`}>
             {/* Features */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
