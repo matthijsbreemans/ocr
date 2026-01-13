@@ -35,6 +35,13 @@ RUN pip3 install --no-cache-dir --break-system-packages \
     opencv-contrib-python-headless \
     Pillow
 
+# Pre-download PaddleOCR language models during build
+# Copy download script first
+COPY download_models.py /tmp/download_models.py
+
+# Download language models (most common European languages)
+RUN python3 /tmp/download_models.py && rm /tmp/download_models.py
+
 # Set working directory
 WORKDIR /app
 

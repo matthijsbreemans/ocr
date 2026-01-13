@@ -48,23 +48,24 @@ def perform_ocr(image_path: str, lang: str = 'en') -> dict:
         sys.stdout = devnull
         sys.stderr = devnull
 
-        # Initialize PaddleOCR
-        # use_angle_cls=True enables text rotation detection
-        # show_log=False reduces console output
-        ocr = PaddleOCR(
-            use_angle_cls=True,
-            lang=lang,
-            show_log=False,
-            use_gpu=False  # Set to True if GPU available
-        )
+        try:
+            # Initialize PaddleOCR
+            # use_angle_cls=True enables text rotation detection
+            # show_log=False reduces console output
+            ocr = PaddleOCR(
+                use_angle_cls=True,
+                lang=lang,
+                show_log=False,
+                use_gpu=False  # Set to True if GPU available
+            )
 
-        # Perform OCR (model download happens here on first run)
-        result = ocr.ocr(image_path, cls=True)
-
-        # Restore stdout and stderr AFTER OCR completes
-        sys.stdout = old_stdout
-        sys.stderr = old_stderr
-        devnull.close()
+            # Perform OCR (model download happens here on first run)
+            result = ocr.ocr(image_path, cls=True)
+        finally:
+            # ALWAYS restore stdout and stderr, even if exception occurs
+            sys.stdout = old_stdout
+            sys.stderr = old_stderr
+            devnull.close()
 
         if not result or not result[0]:
             return {

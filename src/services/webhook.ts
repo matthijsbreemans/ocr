@@ -17,26 +17,43 @@ export class WebhookService {
       const domain = process.env.APP_DOMAIN || 'http://localhost:3040';
       const statusUrl = `${domain}/job/${jobId}`;
 
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'OCR-API/1.0',
-        },
-        body: JSON.stringify({
-          jobId,
-          email,
-          ocrResult,
-          statusUrl,
-          timestamp: new Date().toISOString(),
-        }),
-      });
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      if (!response.ok) {
-        throw new Error(`Webhook returned status ${response.status}`);
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'OCR-API/1.0',
+          },
+          body: JSON.stringify({
+            jobId,
+            email,
+            ocrResult,
+            statusUrl,
+            timestamp: new Date().toISOString(),
+          }),
+        });
+
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          throw new Error(`Webhook returned status ${response.status}`);
+        }
+
+        console.log(`Webhook sent successfully for job ${jobId}`);
+      } catch (fetchError) {
+        clearTimeout(timeout);
+
+        // Handle abort/timeout error
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+          throw new Error('Webhook request timed out after 10 seconds');
+        }
+        throw fetchError;
       }
-
-      console.log(`Webhook sent successfully for job ${jobId}`);
     } catch (error) {
       console.error(`Failed to send webhook for job ${jobId}:`, error);
       // Don't throw - we don't want webhook failures to mark the job as failed

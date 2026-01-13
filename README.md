@@ -23,7 +23,7 @@ A production-ready, queue-based OCR (Optical Character Recognition) API built as
 - **Next.js 14** - Modern React framework for API routes and frontend
 - **PostgreSQL** - Database for job queue and results
 - **Prisma** - Type-safe database ORM
-- **Tesseract.js** - OCR engine for text extraction
+- **PaddleOCR** - Advanced OCR engine for text extraction with multilingual support
 - **Docker** - Containerized deployment
 - **Background Worker** - Separate process for OCR job processing
 
@@ -36,17 +36,27 @@ A production-ready, queue-based OCR (Optical Character Recognition) API built as
 
 ### Quick Start with Docker
 
-1. Clone the repository and navigate to the project directory
-
-2. Start the services:
 ```bash
-docker-compose up --build
+# Clone and configure
+git clone <repository-url>
+cd ocr
+cp .env.example .env
+
+# Start services
+docker compose up -d
+
+# Access the application
+open http://localhost:3040         # Web Interface
+open http://localhost:3040/admin   # Admin Dashboard
+open http://localhost:3040/api-docs # API Documentation
 ```
 
 This will start:
-- PostgreSQL database on port 5432
+- PostgreSQL database on port 5433 (mapped from 5432)
 - Next.js API on port 3040
-- Background worker for processing jobs
+- Background worker for OCR processing
+
+**📚 For Production Deployment:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive guide including NGINX setup, SSL, scaling, monitoring, and security.
 
 3. Access the API at `http://localhost:3040`
 

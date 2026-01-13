@@ -191,7 +191,7 @@ export default function Home() {
         {/* Footer */}
         <div className="mt-12 text-center text-sm text-gray-500">
           <p>
-            Powered by Tesseract OCR • Built with Next.js & PostgreSQL
+            Powered by PaddleOCR • Built with Next.js & PostgreSQL
           </p>
           <p className="mt-1">
             See{' '}

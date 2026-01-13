@@ -5,9 +5,6 @@ const nextConfig = {
       sizeLimit: '50mb',
     },
   },
-  experimental: {
-    serverComponentsExternalPackages: ['tesseract.js'],
-  },
 }
 
 module.exports = nextConfig
