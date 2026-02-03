@@ -314,20 +314,33 @@ See [docs/ADMIN_DASHBOARD.md](docs/ADMIN_DASHBOARD.md) for complete documentatio
 
 ## 📚 Documentation
 
-All detailed documentation is located in the `/docs` folder:
+### Quick References
 
-- [ADMIN_DASHBOARD.md](docs/ADMIN_DASHBOARD.md) - Admin dashboard and job management
-- [API_CONFIGURATION.md](docs/API_CONFIGURATION.md) - API URL configuration and setup
-- [ENHANCED_STRUCTURE.md](docs/ENHANCED_STRUCTURE.md) - Enhanced OCR output structure
-- [ENTITY_EXTRACTION.md](docs/ENTITY_EXTRACTION.md) - Entity extraction features
-- [EXAMPLES.md](docs/EXAMPLES.md) - Usage examples
-- [FILE_VALIDATION.md](docs/FILE_VALIDATION.md) - File validation and security
-- [FRONTEND.md](docs/FRONTEND.md) - Frontend implementation guide
-- [PRODUCTION_FEATURES.md](docs/PRODUCTION_FEATURES.md) - Production-ready features
-- [ROUTING.md](docs/ROUTING.md) - API routing documentation
-- [SECURITY.md](docs/SECURITY.md) - Security implementation details
-- [STRUCTURED_OUTPUT.md](docs/STRUCTURED_OUTPUT.md) - Structured OCR output format
-- [SWAGGER_SETUP.md](docs/SWAGGER_SETUP.md) - Swagger/OpenAPI setup guide
+- [QUICK_START.md](QUICK_START.md) - Quick start commands for dev and production
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Full production deployment guide
+- [DOCKER_COMPOSE_UNIFIED.md](DOCKER_COMPOSE_UNIFIED.md) - Understanding the unified docker-compose setup
+- [PRODUCTION_COMPOSE.md](PRODUCTION_COMPOSE.md) - Production docker-compose configuration guide
+- [DOWNLOAD_API_SPEC.md](DOWNLOAD_API_SPEC.md) - How to download OpenAPI specification
+
+### Database Setup
+
+- [docs/EXTERNAL_DATABASE.md](docs/EXTERNAL_DATABASE.md) - Using external PostgreSQL
+- [docs/TURSO_SETUP.md](docs/TURSO_SETUP.md) - Using Turso (edge SQLite)
+
+### Feature Documentation
+
+- [docs/ADMIN_DASHBOARD.md](docs/ADMIN_DASHBOARD.md) - Admin dashboard and job management
+- [docs/API_CONFIGURATION.md](docs/API_CONFIGURATION.md) - API URL configuration and setup
+- [docs/ENHANCED_STRUCTURE.md](docs/ENHANCED_STRUCTURE.md) - Enhanced OCR output structure
+- [docs/ENTITY_EXTRACTION.md](docs/ENTITY_EXTRACTION.md) - Entity extraction features
+- [docs/EXAMPLES.md](docs/EXAMPLES.md) - Usage examples
+- [docs/FILE_VALIDATION.md](docs/FILE_VALIDATION.md) - File validation and security
+- [docs/FRONTEND.md](docs/FRONTEND.md) - Frontend implementation guide
+- [docs/PRODUCTION_FEATURES.md](docs/PRODUCTION_FEATURES.md) - Production-ready features
+- [docs/ROUTING.md](docs/ROUTING.md) - API routing documentation
+- [docs/SECURITY.md](docs/SECURITY.md) - Security implementation details
+- [docs/STRUCTURED_OUTPUT.md](docs/STRUCTURED_OUTPUT.md) - Structured OCR output format
+- [docs/SWAGGER_SETUP.md](docs/SWAGGER_SETUP.md) - Swagger/OpenAPI setup guide
 
 ## License
 

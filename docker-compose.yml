@@ -1,21 +1,55 @@
+# Universal Docker Compose Configuration
+#
+# Development (default):
+#   docker compose up -d
+#
+# Production:
+#   docker compose --env-file .env.production up -d
+#
+# Production without local DB (external DB):
+#   docker compose --env-file .env.production up -d
+#   (postgres won't start unless ENABLE_LOCAL_DB=true)
+
 services:
+  # PostgreSQL Database
+  # Dev: Always runs
+  # Prod: Only runs if ENABLE_LOCAL_DB=true (use external DB recommended)
   postgres:
     image: postgres:16-alpine
     container_name: ocr-postgres
+    profiles:
+      - ${DB_PROFILE:-default}  # default=always start, with-db=only when specified
     environment:
-      POSTGRES_USER: ocruser
-      POSTGRES_PASSWORD: ocrpassword
-      POSTGRES_DB: ocrdb
+      POSTGRES_USER: ${POSTGRES_USER:-ocruser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ocrpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-ocrdb}
+      # Performance tuning (production only)
+      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-128MB}
+      POSTGRES_WORK_MEM: ${POSTGRES_WORK_MEM:-4MB}
+      POSTGRES_MAX_CONNECTIONS: ${POSTGRES_MAX_CONNECTIONS:-100}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ocruser -d ocrdb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ocruser} -d ${POSTGRES_DB:-ocrdb}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: ${POSTGRES_START_PERIOD:-10s}
+    restart: ${RESTART_POLICY:-no}
+    deploy:
+      resources:
+        limits:
+          cpus: ${POSTGRES_CPU_LIMIT:-2.0}
+          memory: ${POSTGRES_MEMORY_LIMIT:-2G}
+        reservations:
+          cpus: ${POSTGRES_CPU_RESERVE:-0.5}
+          memory: ${POSTGRES_MEMORY_RESERVE:-512M}
+    networks:
+      - ocr-network
 
+  # API Server
   api:
     build:
       context: .
@@ -24,15 +58,52 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+        required: false  # Optional - only needed if postgres is running
     environment:
+      # Database
       DATABASE_URL: ${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}
-      NODE_ENV: ${NODE_ENV:-production}
-      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
-      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:3040}
-    ports:
-      - "3040:3000"
-    command: sh -c "npx prisma db push && npm start"
+      TURSO_AUTH_TOKEN: ${TURSO_AUTH_TOKEN:-}
 
+      # Application
+      NODE_ENV: ${NODE_ENV:-development}
+      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:3040}
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
+
+      # Performance
+      PDF_PAGE_CONCURRENCY: ${PDF_PAGE_CONCURRENCY:-4}
+    ports:
+      - "${API_PORT:-3040}:3000"
+    command: sh -c "npx prisma db push && npm start"
+    restart: ${RESTART_POLICY:-no}
+    healthcheck:
+      test: ${API_HEALTHCHECK_TEST:-["CMD", "curl", "-f", "http://localhost:3000/api/admin/stats"]}
+      interval: ${HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-10s}
+      retries: ${HEALTHCHECK_RETRIES:-3}
+      start_period: ${API_START_PERIOD:-40s}
+      disable: ${DISABLE_HEALTHCHECK:-false}
+    deploy:
+      resources:
+        limits:
+          cpus: ${API_CPU_LIMIT:-2.0}
+          memory: ${API_MEMORY_LIMIT:-2G}
+        reservations:
+          cpus: ${API_CPU_RESERVE:-0.5}
+          memory: ${API_MEMORY_RESERVE:-512M}
+      restart_policy:
+        condition: ${RESTART_CONDITION:-on-failure}
+        delay: ${RESTART_DELAY:-5s}
+        max_attempts: ${RESTART_MAX_ATTEMPTS:-3}
+        window: ${RESTART_WINDOW:-120s}
+    networks:
+      - ocr-network
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-10m}
+        max-file: ${LOG_MAX_FILE:-3}
+
+  # OCR Worker
   worker:
     build:
       context: .
@@ -41,15 +112,53 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+        required: false  # Optional - only needed if postgres is running
     environment:
+      # Database
       DATABASE_URL: ${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}
-      NODE_ENV: ${NODE_ENV:-production}
+      TURSO_AUTH_TOKEN: ${TURSO_AUTH_TOKEN:-}
+
+      # Application
+      NODE_ENV: ${NODE_ENV:-development}
       APP_DOMAIN: ${APP_DOMAIN:-http://localhost:3040}
-      # Performance tuning
-      PDF_PAGE_CONCURRENCY: ${PDF_PAGE_CONCURRENCY:-4}      # How many PDF pages to process in parallel
+
+      # Performance
+      PDF_PAGE_CONCURRENCY: ${PDF_PAGE_CONCURRENCY:-4}
     command: sh -c "npx prisma generate && npm run worker"
+    restart: ${RESTART_POLICY:-no}
+    healthcheck:
+      test: ${WORKER_HEALTHCHECK_TEST:-["CMD", "pgrep", "-f", "tsx"]}
+      interval: ${HEALTHCHECK_INTERVAL:-30s}
+      timeout: ${HEALTHCHECK_TIMEOUT:-10s}
+      retries: ${HEALTHCHECK_RETRIES:-3}
+      start_period: ${WORKER_START_PERIOD:-30s}
+      disable: ${DISABLE_HEALTHCHECK:-false}
     deploy:
-      replicas: 1  # Increase this to scale horizontally (e.g., 2 or 3 workers)
+      replicas: ${WORKER_REPLICAS:-1}
+      resources:
+        limits:
+          cpus: ${WORKER_CPU_LIMIT:-4.0}
+          memory: ${WORKER_MEMORY_LIMIT:-4G}
+        reservations:
+          cpus: ${WORKER_CPU_RESERVE:-1.0}
+          memory: ${WORKER_MEMORY_RESERVE:-1G}
+      restart_policy:
+        condition: ${RESTART_CONDITION:-on-failure}
+        delay: ${RESTART_DELAY:-5s}
+        max_attempts: ${RESTART_MAX_ATTEMPTS:-3}
+        window: ${RESTART_WINDOW:-120s}
+    networks:
+      - ocr-network
+    logging:
+      driver: ${LOG_DRIVER:-json-file}
+      options:
+        max-size: ${LOG_MAX_SIZE:-10m}
+        max-file: ${LOG_MAX_FILE:-3}
 
 volumes:
   postgres_data:
+    driver: local
+
+networks:
+  ocr-network:
+    driver: bridge

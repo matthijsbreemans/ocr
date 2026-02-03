@@ -30,12 +30,12 @@ docker compose up -d
 
 ```bash
 # 1. Configure environment
-cp .env.example .env
-nano .env  # Set APP_DOMAIN and change passwords!
+cp .env.production.example .env.production
+nano .env.production  # Set DATABASE_URL, APP_DOMAIN, passwords!
 
 # 2. Build & deploy
-docker compose build --no-cache
-docker compose up -d
+docker compose --env-file .env.production build --no-cache
+docker compose --env-file .env.production up -d
 
 # 3. Setup NGINX + SSL (see DEPLOYMENT.md)
 ```
@@ -55,12 +55,12 @@ docker compose restart worker
 docker compose restart api
 
 # Scale workers (3 concurrent jobs)
-docker compose up -d --scale worker=3
+docker compose --env-file .env.production up -d --scale worker=3
 
 # Update deployment
 git pull
-docker compose build --no-cache
-docker compose up -d --force-recreate
+docker compose --env-file .env.production build --no-cache
+docker compose --env-file .env.production up -d --force-recreate
 ```
 
 ---
