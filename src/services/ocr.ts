@@ -1,11 +1,11 @@
 import pdf from 'pdf-parse';
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { writeFile, unlink } from 'fs/promises';
+import { writeFile, unlink, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 export interface BoundingBox {
   x0: number;
@@ -194,15 +194,18 @@ export class OCRService {
    * Call PaddleOCR Python script to perform OCR
    */
   private async callPaddleOCR(fileBuffer: Buffer, language: string): Promise<any> {
-    const tempFilePath = path.join(os.tmpdir(), `ocr_${Date.now()}.${language === 'chi_sim' ? 'jpg' : 'png'}`);
+    // Sanitize language to alphanumeric + underscore only
+    const safeLang = language.replace(/[^a-zA-Z0-9_]/g, '');
+    const tempFilePath = path.join(os.tmpdir(), `ocr_${Date.now()}.${safeLang === 'chi_sim' ? 'jpg' : 'png'}`);
 
     try {
       // Write buffer to temporary file
       await writeFile(tempFilePath, fileBuffer);
 
-      // Call Python script
-      const { stdout, stderr } = await execAsync(
-        `python3 /app/paddle_ocr.py "${tempFilePath}" "${language}"`,
+      // Call Python script using execFile (no shell interpretation)
+      const { stdout, stderr } = await execFileAsync(
+        'python3',
+        ['/app/paddle_ocr.py', tempFilePath, safeLang],
         { maxBuffer: 10 * 1024 * 1024 } // 10MB buffer for large outputs
       );
 
@@ -223,7 +226,7 @@ export class OCRService {
       try {
         await unlink(tempFilePath);
       } catch (e) {
-        // Ignore cleanup errors
+        console.error(`Failed to cleanup temp file ${tempFilePath}:`, e);
       }
     }
   }
@@ -1485,10 +1488,15 @@ export class OCRService {
       await writeFile(tempPdfPath, fileBuffer);
 
       // Convert PDF to PNG images using ghostscript
-      // gs -dNOPAUSE -sDEVICE=png16m -r300 -o output-%03d.png input.pdf
-      await execAsync(`mkdir -p "${tempImageDir}"`);
-      await execAsync(
-        `gs -dQUIET -dNOPAUSE -dBATCH -sDEVICE=png16m -r300 -o "${tempImageDir}/page-%03d.png" "${tempPdfPath}"`,
+      await mkdir(tempImageDir, { recursive: true });
+      await execFileAsync(
+        'gs',
+        [
+          '-dQUIET', '-dNOPAUSE', '-dBATCH',
+          '-sDEVICE=png16m', '-r300',
+          `-o${path.join(tempImageDir, 'page-%03d.png')}`,
+          tempPdfPath,
+        ],
         { maxBuffer: 50 * 1024 * 1024 } // 50MB buffer
       );
 
@@ -1558,9 +1566,9 @@ export class OCRService {
         },
       };
     } finally {
-      // Cleanup temp files
+      // Cleanup temp files using fs (not shell commands)
       try {
-        await execAsync(`rm -rf "${tempImageDir}"`);
+        await rm(tempImageDir, { recursive: true, force: true });
         await unlink(tempPdfPath);
       } catch (e) {
         console.error('Error cleaning up temp files:', e);

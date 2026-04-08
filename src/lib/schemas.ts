@@ -1,5 +1,62 @@
 import { z } from 'zod';
 
+/**
+ * Check if a hostname is a private/internal address.
+ * Covers IPv4 private ranges, IPv6 loopback/private, cloud metadata, and localhost variants.
+ */
+function isPrivateHostname(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+
+  // Exact blocked hostnames (localhost, IPv6 loopback variants)
+  const blockedExact = new Set([
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    '::1',
+    '[::1]',
+    '0:0:0:0:0:0:0:1',
+    '[0:0:0:0:0:0:0:1]',
+    '::ffff:127.0.0.1',
+    '[::ffff:127.0.0.1]',
+    '::ffff:0.0.0.0',
+    '[::ffff:0.0.0.0]',
+  ]);
+
+  if (blockedExact.has(h)) return true;
+
+  // Block entire 127.0.0.0/8 and 0.0.0.0/8 ranges
+  if (/^127\./.test(h) || /^0\./.test(h)) return true;
+
+  // Block RFC 1918 private ranges
+  if (
+    h.startsWith('192.168.') ||
+    h.startsWith('10.') ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)
+  ) {
+    return true;
+  }
+
+  // Block link-local (169.254.0.0/16) — also covers AWS metadata 169.254.169.254
+  if (h.startsWith('169.254.')) return true;
+
+  // Block cloud metadata hostnames
+  if (
+    h === 'metadata.google.internal' ||
+    h === 'metadata' ||
+    h.endsWith('.internal')
+  ) {
+    return true;
+  }
+
+  // Block IPv6 unique-local (fc00::/7) and link-local (fe80::/10)
+  const bare = h.replace(/^\[|\]$/g, '');
+  if (/^f[cd][0-9a-f]{2}:/i.test(bare) || /^fe[89ab][0-9a-f]:/i.test(bare)) {
+    return true;
+  }
+
+  return false;
+}
+
 // Custom webhook URL validator to prevent SSRF attacks
 const webhookUrlValidator = z
   .string()
@@ -9,39 +66,18 @@ const webhookUrlValidator = z
       try {
         const parsed = new URL(url);
 
-        // Block localhost and local IPs
-        const blockedHostnames = [
-          'localhost',
-          '127.0.0.1',
-          '0.0.0.0',
-          '::1',
-          '[::1]',
-        ];
-
-        if (blockedHostnames.includes(parsed.hostname.toLowerCase())) {
+        // Only allow http/https schemes
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
           return false;
         }
 
-        // Block private IP ranges
-        const hostname = parsed.hostname.toLowerCase();
-        if (
-          hostname.startsWith('192.168.') ||
-          hostname.startsWith('10.') ||
-          hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./) ||
-          hostname.startsWith('169.254.') // Link-local
-        ) {
-          return false;
-        }
-
-        // Allow both HTTP and HTTPS
-        return true;
+        return !isPrivateHostname(parsed.hostname);
       } catch {
         return false;
       }
     },
     {
-      message:
-        'Webhook URL must not point to private/local networks.',
+      message: 'Webhook URL must not point to private/local networks.',
     }
   );
 

@@ -12,26 +12,36 @@ const PROCESSING_TIMEOUT = 5 * 60 * 1000; // 5 minutes max per job
 
 async function processNextJob(): Promise<boolean> {
   try {
-    // Find the oldest pending job and lock it
-    const job = await prisma.$transaction(async (tx) => {
-      const pendingJob = await tx.job.findFirst({
-        where: { status: 'PENDING' },
-        orderBy: { createdAt: 'asc' },
-      });
+    // Find the oldest pending job
+    const pendingJob = await prisma.job.findFirst({
+      where: { status: 'PENDING' },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
 
-      if (!pendingJob) {
-        return null;
-      }
+    if (!pendingJob) {
+      return false; // No jobs to process
+    }
 
-      // Update to PROCESSING to lock it
-      return await tx.job.update({
-        where: { id: pendingJob.id },
-        data: { status: 'PROCESSING' },
-      });
+    // Atomically claim the job only if it's still PENDING.
+    // This prevents race conditions with multiple worker replicas:
+    // if another worker already claimed it, count will be 0.
+    const claimed = await prisma.job.updateMany({
+      where: { id: pendingJob.id, status: 'PENDING' },
+      data: { status: 'PROCESSING' },
+    });
+
+    if (claimed.count === 0) {
+      return true; // Another worker claimed it, loop again immediately
+    }
+
+    // Fetch the full job data now that we own it
+    const job = await prisma.job.findUnique({
+      where: { id: pendingJob.id },
     });
 
     if (!job) {
-      return false; // No jobs to process
+      return false;
     }
 
     console.log(`Processing job ${job.id}...`);

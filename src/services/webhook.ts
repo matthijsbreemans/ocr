@@ -25,13 +25,13 @@ export class WebhookService {
         const response = await fetch(webhookUrl, {
           method: 'POST',
           signal: controller.signal,
+          redirect: 'error', // Block redirects to prevent SSRF via open redirect
           headers: {
             'Content-Type': 'application/json',
             'User-Agent': 'OCR-API/1.0',
           },
           body: JSON.stringify({
             jobId,
-            email,
             ocrResult,
             statusUrl,
             timestamp: new Date().toISOString(),

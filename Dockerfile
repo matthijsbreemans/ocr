@@ -45,9 +45,10 @@ RUN python3 /tmp/download_models.py && rm /tmp/download_models.py
 # Set working directory
 WORKDIR /app
 
-# Copy package files
+# Copy package files and prisma template
 COPY package*.json ./
-COPY prisma ./prisma/
+COPY prisma/schema.template.prisma ./prisma/schema.template.prisma
+COPY scripts/prisma-provider.mjs ./scripts/prisma-provider.mjs
 
 # Install dependencies
 RUN npm ci
@@ -58,8 +59,10 @@ COPY . .
 # Make Python OCR script executable
 RUN chmod +x /app/paddle_ocr.py
 
-# Generate Prisma Client
-RUN npx prisma generate
+# Generate Prisma schema for PostgreSQL and Prisma Client
+# (Docker always uses PostgreSQL; --no-push skips db push during build)
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+RUN node scripts/prisma-provider.mjs --no-push
 
 # Build Next.js app
 RUN npm run build

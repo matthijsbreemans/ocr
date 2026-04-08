@@ -37,5 +37,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Prisma
-prisma/migrations
+# Prisma (schema.prisma is auto-generated from schema.template.prisma)
+prisma/schema.prisma
+
+# SQLite development database
+prisma/dev.db
+prisma/dev.db-journal

@@ -2,11 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { uploadSchema } from '@/lib/schemas';
 import { FileValidationService } from '@/services/fileValidation';
+import { uploadRateLimiter } from '@/lib/rateLimit';
 
 const fileValidator = new FileValidationService();
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 10 uploads per minute per IP
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0].trim()
+      || request.headers.get('x-real-ip')
+      || 'unknown';
+    const { allowed, remaining, retryAfterMs } = uploadRateLimiter.check(clientIp);
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many upload requests. Please try again later.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil(retryAfterMs / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      );
+    }
+
     const formData = await request.formData();
 
     // Extract form fields

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(du:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx --package=typescript tsc:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx next build:*)",
+      "Bash(findstr:*)",
+      "Bash(set \"DATABASE_URL=file:./dev.db\")",
+      "Bash(node scripts/prisma-provider.mjs:*)",
+      "Bash(set \"DATABASE_URL=postgresql://test:test@localhost:5432/test\")"
+    ]
+  }
+}

@@ -73,7 +73,7 @@ services:
       PDF_PAGE_CONCURRENCY: ${PDF_PAGE_CONCURRENCY:-4}
     ports:
       - "${API_PORT:-3040}:3000"
-    command: sh -c "npx prisma db push && npm start"
+    command: sh -c "node scripts/prisma-provider.mjs && npm start"
     restart: ${RESTART_POLICY:-no}
     healthcheck:
       test: ${API_HEALTHCHECK_TEST:-["CMD", "curl", "-f", "http://localhost:3000/api/admin/stats"]}
@@ -124,7 +124,7 @@ services:
 
       # Performance
       PDF_PAGE_CONCURRENCY: ${PDF_PAGE_CONCURRENCY:-4}
-    command: sh -c "npx prisma generate && npm run worker"
+    command: sh -c "node scripts/prisma-provider.mjs && npm run worker"
     restart: ${RESTART_POLICY:-no}
     healthcheck:
       test: ${WORKER_HEALTHCHECK_TEST:-["CMD", "pgrep", "-f", "tsx"]}

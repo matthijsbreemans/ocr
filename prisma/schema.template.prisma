@@ -8,13 +8,13 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "__PROVIDER__"
   url      = env("DATABASE_URL")
 }
 
 model Job {
   id              String    @id @default(uuid())
-  status    String    @default("PENDING")
+  status          JobStatus @default(PENDING)
   documentType    String    @map("document_type")
   email           String
   callbackWebhook String?   @map("callback_webhook")
@@ -31,4 +31,9 @@ model Job {
   @@map("jobs")
 }
 
-
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}

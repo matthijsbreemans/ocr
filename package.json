@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "Queue-based OCR API service",
   "scripts": {
-    "dev": "next dev -p 3040",
+    "dev": "npm run db:setup && next dev -p 3040",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "worker": "tsx src/worker/processor.ts",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:push": "prisma db push",
+    "db:setup": "node scripts/prisma-provider.mjs",
+    "db:setup:no-push": "node scripts/prisma-provider.mjs --no-push",
+    "db:studio": "node scripts/prisma-provider.mjs --no-push && prisma studio",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:report": "playwright show-report"
