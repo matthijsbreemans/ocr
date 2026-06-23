@@ -26,15 +26,17 @@ test.describe('Frontend UI Tests', () => {
     await expect(page.locator('h1')).toContainText('OCR');
 
     // Check page loaded successfully
-    expect(page.url()).toContain('localhost:3040');
+    expect(page.url()).toContain('localhost:14580');
   });
 
   test('should display upload form elements', async ({ page }) => {
     await page.goto('/');
 
-    // Check for file input
+    // The file input is visually hidden behind a styled drop zone; it must
+    // be attached (so setInputFiles works) and its label must be visible
     const fileInput = page.locator('input[type="file"]');
-    await expect(fileInput).toBeVisible();
+    await expect(fileInput).toBeAttached();
+    await expect(page.locator('label[for="file-upload"]')).toBeVisible();
 
     // Check for document type field
     const documentTypeInput = page.locator('input[name="documentType"], select[name="documentType"]');
@@ -52,14 +54,10 @@ test.describe('Frontend UI Tests', () => {
   test('should validate required fields', async ({ page }) => {
     await page.goto('/');
 
-    // Try to submit without filling fields
+    // Submission is prevented by disabling the button until a file is chosen
     const submitButton = page.locator('button[type="submit"], button:has-text("Upload")').first();
-    await submitButton.click();
-
-    // Should show validation errors or prevent submission
-    // Check if we're still on the same page (not navigated)
-    await page.waitForTimeout(500);
-    expect(page.url()).toContain('localhost:3040');
+    await expect(submitButton).toBeDisabled();
+    expect(page.url()).toContain('localhost:14580');
   });
 
   test('should upload file via UI', async ({ page }) => {
@@ -206,8 +204,8 @@ test.describe('Frontend UI Tests', () => {
       if (jobIdMatch) {
         const jobId = jobIdMatch[0];
 
-        // Navigate to status page
-        await page.goto(`/status/${jobId}`);
+        // Navigate to job status page
+        await page.goto(`/job/${jobId}`);
         await page.waitForTimeout(2000);
 
         // Should show status information
@@ -227,6 +225,7 @@ test.describe('Frontend UI Tests', () => {
   });
 
   test('should handle large file rejection gracefully', async ({ page }) => {
+    test.setTimeout(60000); // Writing and uploading 51MB takes a while
     await page.goto('/');
 
     // Create a 51MB file (exceeds limit)
@@ -263,16 +262,17 @@ test.describe('Frontend UI Tests', () => {
       // Cleanup
       fs.unlinkSync(tempFilePath);
     }
-  }, 60000); // Longer timeout for large file test
+  });
 
   test('should be responsive on mobile viewport', async ({ page }) => {
     // Set mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
 
-    // Check that main elements are still visible
-    const fileInput = page.locator('input[type="file"]');
-    await expect(fileInput).toBeVisible();
+    // Check that main elements are still usable (the file input itself is
+    // intentionally hidden behind a styled drop-zone label)
+    await expect(page.locator('input[type="file"]')).toBeAttached();
+    await expect(page.locator('label[for="file-upload"]')).toBeVisible();
 
     const submitButton = page.locator('button[type="submit"], button:has-text("Upload")').first();
     await expect(submitButton).toBeVisible();

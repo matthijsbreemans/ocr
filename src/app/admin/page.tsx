@@ -1,6 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+
+// When an admin API responds 401/403 (session expired or revoked), bounce to
+// the sign-in flow. Returns true when the response was an auth failure.
+function handleAuthFailure(response: Response): boolean {
+  if (response.status === 401 || response.status === 403) {
+    window.location.href = '/api/auth/signin';
+    return true;
+  }
+  return false;
+}
 
 interface Job {
   id: string;
@@ -40,6 +51,7 @@ interface Stats {
 }
 
 export default function AdminPage() {
+  const { data: session } = useSession();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
@@ -50,6 +62,7 @@ export default function AdminPage() {
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/admin/stats');
+      if (handleAuthFailure(response)) return;
       const data = await response.json();
       setStats(data);
     } catch (error) {
@@ -61,6 +74,7 @@ export default function AdminPage() {
     try {
       const url = `/api/admin/jobs?status=${selectedStatus}&limit=50`;
       const response = await fetch(url);
+      if (handleAuthFailure(response)) return;
       const data = await response.json();
       setJobs(data.jobs);
     } catch (error) {
@@ -177,6 +191,19 @@ export default function AdminPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           <div className="flex items-center gap-4">
+            {session?.user?.email && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray-600">
+                  {session.user.email}
+                </span>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="px-3 py-2 text-sm bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"

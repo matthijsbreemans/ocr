@@ -18,21 +18,12 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PaddleOCR and dependencies
-# Pin numpy to 1.x for OpenCV compatibility
+# Install PaddleOCR 3.x (PP-OCRv5) — significantly better accuracy than the
+# 2.x PP-OCRv3 models, including native handwriting recognition
 RUN pip3 install --no-cache-dir --break-system-packages \
-    "numpy<2.0" \
-    paddlepaddle==2.6.2 \
-    paddleocr==2.7.3 \
-    shapely \
-    pyclipper \
-    imgaug \
-    lmdb \
-    tqdm \
-    visualdl \
-    rapidfuzz \
+    paddlepaddle==3.0.0 \
+    paddleocr==3.2.0 \
     opencv-python-headless \
-    opencv-contrib-python-headless \
     Pillow
 
 # Pre-download PaddleOCR language models during build

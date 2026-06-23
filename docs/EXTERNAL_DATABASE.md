@@ -53,7 +53,7 @@ Edit your `.env` file:
 
 ```bash
 # Comment out the local database
-# DATABASE_URL="postgresql://ocruser:ocrpassword@localhost:5433/ocrdb"
+# DATABASE_URL="postgresql://ocruser:ocrpassword@localhost:15433/ocrdb"
 
 # Use external database
 DATABASE_URL="postgresql://ocruser:your_password@your-db-host:5432/ocrdb?sslmode=require"
@@ -215,7 +215,7 @@ docker compose logs worker | grep -i "database\|prisma\|connection"
 
 Test the API:
 ```bash
-curl http://localhost:3040/api/admin/stats
+curl http://localhost:14580/api/admin/stats
 ```
 
 ---

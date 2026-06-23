@@ -236,7 +236,7 @@ const ocrResult = await Promise.race([
 # Create a text file disguised as PNG
 echo "This is not an image" > fake.png
 
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@fake.png" \
   -F "documentType=test" \
   -F "email=test@example.com"
@@ -248,7 +248,7 @@ curl -X POST http://localhost:3040/api/upload \
 ### Test 2: Valid Image
 ```bash
 # Upload actual PNG
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@real-invoice.png" \
   -F "documentType=invoice" \
   -F "email=test@example.com"
@@ -259,7 +259,7 @@ curl -X POST http://localhost:3040/api/upload \
 
 ### Test 3: Blocked Webhook
 ```bash
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@invoice.png" \
   -F "documentType=invoice" \
   -F "email=test@example.com" \
@@ -272,7 +272,7 @@ curl -X POST http://localhost:3040/api/upload \
 ### Test 4: Image Bomb
 ```bash
 # Try to upload 42.zip (decompression bomb)
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@42.zip" \
   -F "documentType=test" \
   -F "email=test@example.com"
@@ -284,7 +284,7 @@ curl -X POST http://localhost:3040/api/upload \
 ### Test 5: PDF with JavaScript
 ```bash
 # Upload malicious PDF with embedded JS
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@malicious.pdf" \
   -F "documentType=contract" \
   -F "email=test@example.com"

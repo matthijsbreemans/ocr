@@ -24,6 +24,7 @@ export async function GET(
         status: true,
         documentType: true,
         email: true,
+        storeResult: true,
         ocrResult: true,
         errorMessage: true,
         createdAt: true,
@@ -51,12 +52,18 @@ export async function GET(
 
     if (job.status === 'COMPLETED') {
       response.ocrResult = job.ocrResult;
+      response.storeResult = job.storeResult;
       response.processedAt = job.processedAt;
     }
 
     if (job.status === 'FAILED') {
       response.errorMessage = job.errorMessage;
       response.processedAt = job.processedAt;
+      // A job can fail purely because webhook delivery failed while the OCR
+      // result was still computed and stored. Surface it so the result isn't
+      // stranded in the DB (null for non-stored jobs, so nothing leaks).
+      response.ocrResult = job.ocrResult;
+      response.storeResult = job.storeResult;
     }
 
     return NextResponse.json(response);

@@ -28,7 +28,7 @@ services:
       POSTGRES_WORK_MEM: ${POSTGRES_WORK_MEM:-4MB}
       POSTGRES_MAX_CONNECTIONS: ${POSTGRES_MAX_CONNECTIONS:-100}
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "${POSTGRES_PORT:-15433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -61,22 +61,37 @@ services:
         required: false  # Optional - only needed if postgres is running
     environment:
       # Database
-      DATABASE_URL: ${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}
+      # DOCKER_DATABASE_URL takes precedence so a host .env that points at a
+      # local SQLite file (file:./dev.db) is never injected into containers —
+      # each container would get its own private copy and jobs would never
+      # be picked up by the worker.
+      DATABASE_URL: ${DOCKER_DATABASE_URL:-${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}}
       TURSO_AUTH_TOKEN: ${TURSO_AUTH_TOKEN:-}
 
       # Application
       NODE_ENV: ${NODE_ENV:-development}
-      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:3040}
+      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:14580}
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
 
-      # Performance
-      PDF_PAGE_CONCURRENCY: ${PDF_PAGE_CONCURRENCY:-4}
+      # Admin panel OIDC auth (see .env.example). Auth is enforced unless
+      # ADMIN_AUTH_DISABLED=true. NEXTAUTH_URL defaults to APP_DOMAIN.
+      ADMIN_AUTH_DISABLED: ${ADMIN_AUTH_DISABLED:-false}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-${APP_DOMAIN:-http://localhost:14580}}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-}
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_SCOPES: ${OIDC_SCOPES:-}
+      OIDC_PROVIDER_NAME: ${OIDC_PROVIDER_NAME:-}
     ports:
-      - "${API_PORT:-3040}:3000"
+      - "${API_PORT:-14580}:3000"
     command: sh -c "node scripts/prisma-provider.mjs && npm start"
     restart: ${RESTART_POLICY:-no}
     healthcheck:
-      test: ${API_HEALTHCHECK_TEST:-["CMD", "curl", "-f", "http://localhost:3000/api/admin/stats"]}
+      # Interpolated value is a string, so compose runs it as a shell command.
+      # The image has no curl, so probe with node's built-in fetch.
+      # Probes /api/health (public) — /api/admin/stats is now behind auth.
+      test: ${API_HEALTHCHECK_TEST:-node -e "fetch('http://localhost:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"}
       interval: ${HEALTHCHECK_INTERVAL:-30s}
       timeout: ${HEALTHCHECK_TIMEOUT:-10s}
       retries: ${HEALTHCHECK_RETRIES:-3}
@@ -114,20 +129,18 @@ services:
         condition: service_healthy
         required: false  # Optional - only needed if postgres is running
     environment:
-      # Database
-      DATABASE_URL: ${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}
+      # Database (same precedence rules as the api service above)
+      DATABASE_URL: ${DOCKER_DATABASE_URL:-${DATABASE_URL:-postgresql://ocruser:ocrpassword@postgres:5432/ocrdb}}
       TURSO_AUTH_TOKEN: ${TURSO_AUTH_TOKEN:-}
 
       # Application
       NODE_ENV: ${NODE_ENV:-development}
-      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:3040}
-
-      # Performance
-      PDF_PAGE_CONCURRENCY: ${PDF_PAGE_CONCURRENCY:-4}
+      APP_DOMAIN: ${APP_DOMAIN:-http://localhost:14580}
     command: sh -c "node scripts/prisma-provider.mjs && npm run worker"
     restart: ${RESTART_POLICY:-no}
     healthcheck:
-      test: ${WORKER_HEALTHCHECK_TEST:-["CMD", "pgrep", "-f", "tsx"]}
+      # The image has no pgrep (procps), so scan /proc cmdlines for tsx.
+      test: ${WORKER_HEALTHCHECK_TEST:-grep -la tsx /proc/[0-9]*/cmdline}
       interval: ${HEALTHCHECK_INTERVAL:-30s}
       timeout: ${HEALTHCHECK_TIMEOUT:-10s}
       retries: ${HEALTHCHECK_RETRIES:-3}

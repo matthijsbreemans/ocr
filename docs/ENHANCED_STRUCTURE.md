@@ -392,13 +392,13 @@ const tables = result.blocks.filter(b =>
 - **Main README**: `/README.md`
 - **Basic Structure**: `/STRUCTURED_OUTPUT.md`
 - **This Document**: `/ENHANCED_STRUCTURE.md`
-- **API Docs**: http://localhost:3040/api-docs
+- **API Docs**: http://localhost:14580/api-docs
 - **Project Summary**: `/SHORT_MEMORY.md`
 
 ## 🧪 Testing
 
 ### **Upload a Test Document**
-1. Visit http://localhost:3040
+1. Visit http://localhost:14580
 2. Upload an invoice, report, or form
 3. Wait for processing
 4. Switch between the 4 tabs to see:
@@ -410,13 +410,13 @@ const tables = result.blocks.filter(b =>
 ### **API Testing**
 ```bash
 # Upload document
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@invoice.pdf" \
   -F "documentType=invoice" \
   -F "email=test@example.com"
 
 # Get structured results
-curl http://localhost:3040/api/status/{job-id}
+curl http://localhost:14580/api/status/{job-id}
 
 # Parse the structure
 cat result.json | jq '.structure.headings'

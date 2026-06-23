@@ -53,13 +53,13 @@ docker compose logs -f api
 docker compose ps
 
 # Test the API
-curl http://localhost:3040/api/openapi
+curl http://localhost:14580/api/openapi
 
 # Access the web interface
-open http://localhost:3040
+open http://localhost:14580
 
 # Access admin dashboard
-open http://localhost:3040/admin
+open http://localhost:14580/admin
 ```
 
 ### 4. Development Tools
@@ -172,9 +172,6 @@ NODE_ENV="production"
 APP_DOMAIN="https://ocrtools.com"
 NEXT_PUBLIC_API_BASE_URL=""  # Leave empty if API on same domain
 
-# Performance tuning
-PDF_PAGE_CONCURRENCY=4  # Adjust based on CPU cores
-
 # Optional: Connection pool limits
 # DATABASE_URL="postgresql://ocruser:password@postgres:5432/ocrdb?connection_limit=20&pool_timeout=10"
 ```
@@ -211,7 +208,7 @@ server {
     server_name api.ocrtools.com;
 
     location / {
-        proxy_pass http://localhost:3040;
+        proxy_pass http://localhost:14580;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -238,7 +235,7 @@ server {
     server_name ocrtools.com;
 
     location / {
-        proxy_pass http://localhost:3040;
+        proxy_pass http://localhost:14580;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -565,9 +562,8 @@ NEXT_PUBLIC_API_BASE_URL="https://api.ocrtools.com"
 |----------|---------|-------------|
 | `DATABASE_URL` | `postgresql://ocruser:ocrpassword@postgres:5432/ocrdb` | PostgreSQL connection string |
 | `NODE_ENV` | `development` | Environment (`development` or `production`) |
-| `APP_DOMAIN` | `http://localhost:3040` | Main application domain |
+| `APP_DOMAIN` | `http://localhost:14580` | Main application domain |
 | `NEXT_PUBLIC_API_BASE_URL` | (empty) | API domain if different from main |
-| `PDF_PAGE_CONCURRENCY` | `4` | PDF pages processed in parallel |
 
 ---
 
@@ -596,6 +592,6 @@ docker system prune -a                                               # Clean up
 ## 🆘 Support
 
 - **Documentation**: `/docs` folder
-- **Admin Dashboard**: `http://localhost:3040/admin`
-- **API Docs**: `http://localhost:3040/api-docs`
-- **Health Check**: `http://localhost:3040/api/admin/stats`
+- **Admin Dashboard**: `http://localhost:14580/admin`
+- **API Docs**: `http://localhost:14580/api-docs`
+- **Health Check**: `http://localhost:14580/api/admin/stats`

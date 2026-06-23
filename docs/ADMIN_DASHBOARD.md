@@ -27,7 +27,7 @@ The OCR API Service includes a comprehensive admin dashboard for monitoring and 
 ## Accessing the Admin Dashboard
 
 ### Web Interface
-Navigate to: `http://localhost:3040/admin`
+Navigate to: `http://localhost:14580/admin`
 
 Or click the **Admin** link in the top navigation bar on the homepage.
 
@@ -267,34 +267,34 @@ Before deploying to production, implement authentication:
 ### Monitor Job Processing
 ```bash
 # Watch stats in real-time
-watch -n 5 "curl -s http://localhost:3040/api/admin/stats | python3 -m json.tool"
+watch -n 5 "curl -s http://localhost:14580/api/admin/stats | python3 -m json.tool"
 ```
 
 ### Find Failed Jobs
 ```bash
-curl -s "http://localhost:3040/api/admin/jobs?status=FAILED" | python3 -m json.tool
+curl -s "http://localhost:14580/api/admin/jobs?status=FAILED" | python3 -m json.tool
 ```
 
 ### Delete Old Completed Jobs
 ```bash
 # Get old jobs
-curl -s "http://localhost:3040/api/admin/jobs?status=COMPLETED&limit=100" \
+curl -s "http://localhost:14580/api/admin/jobs?status=COMPLETED&limit=100" \
   | python3 -c "import sys,json; jobs=json.load(sys.stdin)['jobs']; print('\\n'.join([j['id'] for j in jobs]))" \
   > job_ids.txt
 
 # Delete each job
 while read job_id; do
-  curl -X DELETE "http://localhost:3040/api/admin/jobs/$job_id"
+  curl -X DELETE "http://localhost:14580/api/admin/jobs/$job_id"
   echo "Deleted $job_id"
 done < job_ids.txt
 ```
 
 ### Reset All Stuck Jobs
 ```bash
-curl -s "http://localhost:3040/api/admin/stats" \
+curl -s "http://localhost:14580/api/admin/stats" \
   | python3 -c "import sys,json; stuck=json.load(sys.stdin)['stuckJobs']; [print(j['id']) for j in stuck]" \
   | while read job_id; do
-      curl -X PATCH "http://localhost:3040/api/admin/jobs/$job_id" \
+      curl -X PATCH "http://localhost:14580/api/admin/jobs/$job_id" \
         -H "Content-Type: application/json" \
         -d '{"status":"PENDING"}'
       echo "Reset $job_id"
@@ -306,7 +306,7 @@ curl -s "http://localhost:3040/api/admin/stats" \
 ### Admin Page Not Loading
 ```bash
 # Check API is running
-curl http://localhost:3040/api/admin/stats
+curl http://localhost:14580/api/admin/stats
 
 # Check Next.js logs
 docker compose logs api
@@ -324,7 +324,7 @@ docker compose exec api npx prisma db push
 ### Can't Delete Processing Job
 Use `force=true` parameter:
 ```bash
-curl -X DELETE "http://localhost:3040/api/admin/jobs/{jobId}?force=true"
+curl -X DELETE "http://localhost:14580/api/admin/jobs/{jobId}?force=true"
 ```
 
 ## Related Documentation

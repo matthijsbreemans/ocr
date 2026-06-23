@@ -488,7 +488,7 @@ Upload documents containing:
 - **Bank Statements** - Account numbers, routing numbers, amounts
 
 ### **Verification**
-1. Upload document at http://localhost:3040
+1. Upload document at http://localhost:14580
 2. Wait for processing
 3. Click **"🔍 Document Analysis"** tab
 4. Check **"🔍 Notable Data Extracted"** section
@@ -524,4 +524,4 @@ The **Entity Extraction** feature provides:
 **Version**: 5.0.0
 **Status**: ✅ Production Ready
 **Last Updated**: 2025-10-21
-**Access**: http://localhost:3040
+**Access**: http://localhost:14580

@@ -151,7 +151,7 @@ export const prisma =
 # Format: postgresql://user:pass@host:port/db?connection_limit=10&pool_timeout=20
 # - connection_limit: Max number of connections (default: unlimited for serverless, 10 for long-running)
 # - pool_timeout: Seconds to wait for a connection (default: 10)
-# Example: DATABASE_URL="postgresql://ocruser:ocrpassword@localhost:5433/ocrdb?connection_limit=20&pool_timeout=10"
+# Example: DATABASE_URL="postgresql://ocruser:ocrpassword@localhost:15433/ocrdb?connection_limit=20&pool_timeout=10"
 ```
 
 **Impact**:

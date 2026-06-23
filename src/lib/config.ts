@@ -12,6 +12,15 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 /**
+ * Canonical externally-reachable URL of this app, used to build links in
+ * webhooks and emails. Single source of truth for the localhost fallback so
+ * the default isn't duplicated across services.
+ */
+export function getAppDomain(): string {
+  return process.env.APP_DOMAIN || 'http://localhost:14580';
+}
+
+/**
  * Get full API URL for an endpoint
  * @param path - API path (e.g., '/api/upload')
  * @returns Full URL
@@ -37,5 +46,5 @@ export function getServerUrl(): string {
   }
 
   // Server-side: use configured API base or default
-  return API_BASE_URL || 'http://localhost:3040';
+  return API_BASE_URL || 'http://localhost:14580';
 }

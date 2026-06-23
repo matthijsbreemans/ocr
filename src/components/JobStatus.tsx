@@ -9,6 +9,7 @@ interface Job {
   documentType: string;
   email: string;
   ocrResult?: string;
+  storeResult?: boolean;
   errorMessage?: string;
   createdAt: string;
   updatedAt: string;
@@ -52,6 +53,14 @@ function OCRResultDisplay({ ocrResult }: { ocrResult: string }) {
             <span className="px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
               {parsedResult.confidence?.toFixed(1)}% confidence
             </span>
+            {parsedResult.metadata?.engine && (
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
+                {parsedResult.metadata.engine}
+                {parsedResult.metadata.mode && parsedResult.metadata.mode !== 'auto'
+                  ? ` · ${parsedResult.metadata.mode}`
+                  : ''}
+              </span>
+            )}
             {parsedResult.metadata?.processingTime && (
               <span className="text-gray-500">
                 {(parsedResult.metadata.processingTime / 1000).toFixed(1)}s
@@ -774,9 +783,25 @@ export default function JobStatus({ jobId, onClose }: JobStatusProps) {
           </div>
         </div>
 
-        {/* OCR Result */}
-        {job.status === 'COMPLETED' && job.ocrResult && (
+        {/* OCR Result — shown for COMPLETED jobs and for FAILED jobs whose
+            OCR succeeded but webhook delivery failed (the result is still
+            stored for storeResult=true jobs). */}
+        {(job.status === 'COMPLETED' || job.status === 'FAILED') && job.ocrResult && (
           <OCRResultDisplay ocrResult={job.ocrResult} />
+        )}
+
+        {/* Result was delivered via webhook only and not stored */}
+        {job.status === 'COMPLETED' && !job.ocrResult && job.storeResult === false && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <label className="text-sm font-medium text-blue-800 block mb-1">
+              Result delivered via webhook
+            </label>
+            <p className="text-sm text-blue-700">
+              This job was submitted without server-side storage, so the OCR
+              result was sent to your callback webhook only and is not retained
+              here.
+            </p>
+          </div>
         )}
 
         {/* Error Message */}

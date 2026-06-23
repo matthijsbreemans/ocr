@@ -15,11 +15,11 @@
     },
     "servers": [
         {
-            "url": "http://localhost:3040",
+            "url": "http://localhost:14580",
             "description": "Production Server"
         },
         {
-            "url": "http://localhost:3040",
+            "url": "http://localhost:14580",
             "description": "Local Development Server"
         },
         {
@@ -80,6 +80,18 @@
                                         "format": "uri",
                                         "description": "Optional webhook URL to receive results when processing completes (HTTP or HTTPS allowed, but must not point to private/local networks)",
                                         "example": "https://your-app.com/webhook"
+                                    },
+                                    "language": {
+                                        "type": "string",
+                                        "enum": ["eng", "fra", "deu", "spa", "ita", "por", "nld", "chi_sim", "chi_tra", "jpn", "kor", "ara", "rus"],
+                                        "default": "eng",
+                                        "description": "Language of the document text"
+                                    },
+                                    "ocrMode": {
+                                        "type": "string",
+                                        "enum": ["auto", "printed", "handwriting"],
+                                        "default": "auto",
+                                        "description": "Recognition mode. Use 'handwriting' for handwritten documents (applies contrast-boosting preprocessing)"
                                     }
                                 }
                             }
@@ -449,7 +461,7 @@
                     "jobId": "550e8400-e29b-41d4-a716-446655440000",
                     "email": "user@example.com",
                     "ocrResult": "Extracted text from the document...",
-                    "statusUrl": "http://localhost:3040/job/550e8400-e29b-41d4-a716-446655440000",
+                    "statusUrl": "http://localhost:14580/job/550e8400-e29b-41d4-a716-446655440000",
                     "timestamp": "2025-10-21T10:00:15.000Z"
                 }
             }

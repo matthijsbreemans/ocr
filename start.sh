@@ -34,7 +34,7 @@ if docker-compose ps | grep -q "Up"; then
     echo ""
     echo "✅ OCR API Service is running!"
     echo ""
-    echo "📍 API: http://localhost:3040"
+    echo "📍 API: http://localhost:14580"
     echo "📊 Database: postgresql://ocruser:ocrpassword@localhost:5432/ocrdb"
     echo ""
     echo "📖 Open test-client.html in your browser to test the API"

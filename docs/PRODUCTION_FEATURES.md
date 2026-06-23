@@ -480,7 +480,7 @@ Potential improvements for v5.0:
 - **Enhanced Structure**: `/ENHANCED_STRUCTURE.md`
 - **This Document**: `/PRODUCTION_FEATURES.md`
 - **Project Summary**: `/SHORT_MEMORY.md`
-- **API Docs**: http://localhost:3040/api-docs
+- **API Docs**: http://localhost:14580/api-docs
 
 ---
 
@@ -506,18 +506,18 @@ Potential improvements for v5.0:
 ### API Testing
 ```bash
 # Upload document
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@invoice.pdf" \
   -F "documentType=invoice" \
   -F "email=test@example.com"
 
 # Get results
-curl http://localhost:3040/api/status/{job-id} | jq '.structure'
+curl http://localhost:14580/api/status/{job-id} | jq '.structure'
 
 # Extract specific data
-curl http://localhost:3040/api/status/{job-id} | jq '.structure.smartFields'
-curl http://localhost:3040/api/status/{job-id} | jq '.structure.tables'
-curl http://localhost:3040/api/status/{job-id} | jq '.structure.keyValuePairs'
+curl http://localhost:14580/api/status/{job-id} | jq '.structure.smartFields'
+curl http://localhost:14580/api/status/{job-id} | jq '.structure.tables'
+curl http://localhost:14580/api/status/{job-id} | jq '.structure.keyValuePairs'
 ```
 
 ---
@@ -539,4 +539,4 @@ Your OCR API now has **production-grade document intelligence**:
 **Version**: 4.0.0
 **Status**: ✅ Production Ready
 **Last Updated**: 2025-10-21
-**Access**: http://localhost:3040
+**Access**: http://localhost:14580

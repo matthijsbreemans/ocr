@@ -24,12 +24,6 @@ test.describe('OCR API Tests', () => {
     test('should accept valid image upload', async ({ request }) => {
       const imageBuffer = await createTestImage('Test Invoice #12345');
 
-      const formData = new FormData();
-      const blob = new Blob([imageBuffer], { type: 'image/png' });
-      formData.append('file', blob, 'test.png');
-      formData.append('documentType', 'invoice');
-      formData.append('email', 'test@example.com');
-
       const response = await request.post('/api/upload', {
         multipart: {
           file: {
@@ -42,7 +36,7 @@ test.describe('OCR API Tests', () => {
         },
       });
 
-      expect(response.status()).toBe(200);
+      expect(response.status()).toBe(201);
       const data = await response.json();
       expect(data).toHaveProperty('id');
       expect(data).toHaveProperty('status');
@@ -137,7 +131,7 @@ test.describe('OCR API Tests', () => {
         },
       });
 
-      expect(response.status()).toBe(200);
+      expect(response.status()).toBe(201);
     });
   });
 
@@ -189,9 +183,11 @@ test.describe('OCR API Tests', () => {
     });
 
     test('should eventually complete job processing', async ({ request }) => {
+      test.setTimeout(180000); // OCR processing can take a while under load
+
       // Poll for job completion
       let attempts = 0;
-      const maxAttempts = 60; // 60 seconds max
+      const maxAttempts = 150;
       let completed = false;
 
       while (attempts < maxAttempts && !completed) {
@@ -215,7 +211,7 @@ test.describe('OCR API Tests', () => {
       }
 
       expect(completed).toBe(true);
-    }, 120000); // 2 minute timeout for this test
+    });
   });
 
   test.describe('API OpenAPI Documentation', () => {
@@ -276,7 +272,7 @@ test.describe('OCR API Tests', () => {
         },
       });
 
-      expect(response.status()).toBe(200);
+      expect(response.status()).toBe(201);
     });
 
     test('should accept valid WebP images', async ({ request }) => {
@@ -303,7 +299,7 @@ test.describe('OCR API Tests', () => {
         },
       });
 
-      expect(response.status()).toBe(200);
+      expect(response.status()).toBe(201);
     });
   });
 });

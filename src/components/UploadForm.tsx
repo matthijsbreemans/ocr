@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getApiUrl } from '@/lib/config';
+import { SUPPORTED_LANGUAGES, OCR_MODES } from '@/lib/schemas';
 
 export default function UploadForm() {
   const router = useRouter();
@@ -10,6 +11,9 @@ export default function UploadForm() {
   const [documentType, setDocumentType] = useState('');
   const [email, setEmail] = useState('');
   const [callbackWebhook, setCallbackWebhook] = useState('');
+  const [storeResult, setStoreResult] = useState(true);
+  const [language, setLanguage] = useState('eng');
+  const [ocrMode, setOcrMode] = useState('auto');
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -61,6 +65,13 @@ export default function UploadForm() {
       return;
     }
 
+    if (!storeResult && !callbackWebhook.trim()) {
+      setError(
+        'A callback webhook is required when not storing the OCR result.'
+      );
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -68,6 +79,9 @@ export default function UploadForm() {
       formData.append('file', file);
       formData.append('documentType', documentType.trim());
       formData.append('email', email.trim());
+      formData.append('language', language);
+      formData.append('ocrMode', ocrMode);
+      formData.append('storeResult', String(storeResult));
       if (callbackWebhook.trim()) {
         formData.append('callbackWebhook', callbackWebhook.trim());
       }
@@ -174,6 +188,7 @@ export default function UploadForm() {
         <input
           type="text"
           id="documentType"
+          name="documentType"
           value={documentType}
           onChange={(e) => setDocumentType(e.target.value)}
           placeholder="e.g., invoice, receipt, contract"
@@ -181,6 +196,51 @@ export default function UploadForm() {
           disabled={isUploading}
           required
         />
+      </div>
+
+      {/* Language & Recognition Mode */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-2">
+            Document Language
+          </label>
+          <select
+            id="language"
+            name="language"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            disabled={isUploading}
+          >
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="ocrMode" className="block text-sm font-medium text-gray-700 mb-2">
+            Recognition Mode
+          </label>
+          <select
+            id="ocrMode"
+            name="ocrMode"
+            value={ocrMode}
+            onChange={(e) => setOcrMode(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+            disabled={isUploading}
+          >
+            {OCR_MODES.map((mode) => (
+              <option key={mode.value} value={mode.value}>
+                {mode.label}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
+            Use Handwriting for notes, forms, and handwritten documents
+          </p>
+        </div>
       </div>
 
       {/* Email */}
@@ -191,6 +251,7 @@ export default function UploadForm() {
         <input
           type="email"
           id="email"
+          name="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
@@ -208,6 +269,7 @@ export default function UploadForm() {
         <input
           type="url"
           id="webhook"
+          name="callbackWebhook"
           value={callbackWebhook}
           onChange={(e) => setCallbackWebhook(e.target.value)}
           placeholder="https://your-app.com/webhook"
@@ -217,6 +279,29 @@ export default function UploadForm() {
         <p className="mt-1 text-sm text-gray-500">
           Receive a POST request when processing completes
         </p>
+      </div>
+
+      {/* Privacy: don't store the OCR result */}
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!storeResult}
+            onChange={(e) => setStoreResult(!e.target.checked)}
+            disabled={isUploading}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span>
+            <span className="block text-sm font-medium text-gray-700">
+              Don&apos;t store the OCR result
+            </span>
+            <span className="block text-xs text-gray-500 mt-1">
+              The result is delivered to your webhook only and never saved on the
+              server (it won&apos;t appear on the status page). Requires a webhook
+              URL. The uploaded file is always deleted after processing.
+            </span>
+          </span>
+        </label>
       </div>
 
       {/* Error Message */}

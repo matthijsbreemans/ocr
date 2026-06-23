@@ -74,7 +74,7 @@ Handles API base URL for cross-origin setups:
 
 ### Swagger UI Page
 ```
-http://localhost:3040/api-docs
+http://localhost:14580/api-docs
 ```
 
 Features:
@@ -85,7 +85,7 @@ Features:
 
 ### OpenAPI JSON
 ```
-http://localhost:3040/api/openapi
+http://localhost:14580/api/openapi
 ```
 
 Returns:
@@ -106,7 +106,7 @@ No configuration needed! Swagger UI and API are on the same server.
 npm run dev
 
 # Visit Swagger UI
-open http://localhost:3040/api-docs
+open http://localhost:14580/api-docs
 ```
 
 ### Separate API Server
@@ -239,7 +239,7 @@ The Swagger UI page includes:
 
 ### Try It Out (In Browser)
 
-1. Visit `http://localhost:3040/api-docs`
+1. Visit `http://localhost:14580/api-docs`
 2. Click on **POST /api/upload**
 3. Click **"Try it out"** button
 4. Fill in the form:
@@ -260,7 +260,7 @@ The Swagger UI page includes:
 
 ```bash
 # Download OpenAPI spec
-curl http://localhost:3040/api/openapi > openapi.json
+curl http://localhost:14580/api/openapi > openapi.json
 
 # Use with other tools
 swagger-cli validate openapi.json
@@ -270,7 +270,7 @@ swagger-cli validate openapi.json
 
 1. Open Postman
 2. Click "Import"
-3. Enter URL: `http://localhost:3040/api/openapi`
+3. Enter URL: `http://localhost:14580/api/openapi`
 4. Click "Import"
 5. Collection created with all endpoints!
 
@@ -282,13 +282,13 @@ npm install -g @openapitools/openapi-generator-cli
 
 # Generate TypeScript client
 openapi-generator-cli generate \
-  -i http://localhost:3040/api/openapi \
+  -i http://localhost:14580/api/openapi \
   -g typescript-fetch \
   -o ./client
 
 # Generate Python client
 openapi-generator-cli generate \
-  -i http://localhost:3040/api/openapi \
+  -i http://localhost:14580/api/openapi \
   -g python \
   -o ./client-python
 ```
@@ -411,7 +411,7 @@ When you add/modify endpoints:
 
 ```bash
 # Verify spec is accessible
-curl http://localhost:3040/api/openapi
+curl http://localhost:14580/api/openapi
 
 # Check for JSON syntax errors
 cat src/lib/openapi.json | jq .
@@ -451,8 +451,8 @@ Restart the server for changes to take effect.
 - ✅ Professional documentation page
 
 **Access:**
-- 🌐 Swagger UI: `http://localhost:3040/api-docs`
-- 📄 OpenAPI JSON: `http://localhost:3040/api/openapi`
+- 🌐 Swagger UI: `http://localhost:14580/api-docs`
+- 📄 OpenAPI JSON: `http://localhost:14580/api/openapi`
 
 **Next steps:**
 - Try the interactive documentation

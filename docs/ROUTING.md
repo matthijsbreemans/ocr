@@ -49,7 +49,7 @@ The OCR API now uses URL-based routing for job status pages. After uploading a d
 ### 1. **Shareable URLs**
 Users can copy and share the job URL with others:
 ```
-http://localhost:3040/job/abc-123-def-456
+http://localhost:14580/job/abc-123-def-456
 ```
 
 ### 2. **Browser History**
@@ -137,7 +137,7 @@ export default function UploadForm() {
 ### POST `/api/upload`
 **Request:**
 ```bash
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@document.pdf" \
   -F "documentType=invoice" \
   -F "email=user@example.com"
@@ -155,7 +155,7 @@ curl -X POST http://localhost:3040/api/upload \
 ### GET `/api/status/[id]`
 **Request:**
 ```bash
-curl http://localhost:3040/api/status/abc-123-def-456
+curl http://localhost:14580/api/status/abc-123-def-456
 ```
 
 **Response:**
@@ -202,7 +202,7 @@ Works automatically - users can navigate back to the upload page
 ### Direct URL Access
 Users can type or paste a job URL directly:
 ```
-http://localhost:3040/job/abc-123-def-456
+http://localhost:14580/job/abc-123-def-456
 ```
 
 ## Testing
@@ -211,7 +211,7 @@ http://localhost:3040/job/abc-123-def-456
 
 1. **Upload Flow**
    ```
-   1. Visit http://localhost:3040
+   1. Visit http://localhost:14580
    2. Upload a document
    3. Observe automatic redirect to /job/[id]
    4. Verify URL contains job ID
@@ -241,7 +241,7 @@ http://localhost:3040/job/abc-123-def-456
 ### API Testing
 ```bash
 # Upload document
-RESPONSE=$(curl -s -X POST http://localhost:3040/api/upload \
+RESPONSE=$(curl -s -X POST http://localhost:14580/api/upload \
   -F "file=@test.png" \
   -F "documentType=test" \
   -F "email=test@example.com")
@@ -250,10 +250,10 @@ RESPONSE=$(curl -s -X POST http://localhost:3040/api/upload \
 JOB_ID=$(echo $RESPONSE | jq -r '.id')
 
 # Access job URL
-echo "Job URL: http://localhost:3040/job/$JOB_ID"
+echo "Job URL: http://localhost:14580/job/$JOB_ID"
 
 # Check status
-curl http://localhost:3040/api/status/$JOB_ID
+curl http://localhost:14580/api/status/$JOB_ID
 ```
 
 ## Advantages Over Modal/Inline Display
@@ -342,7 +342,7 @@ The URL routing implementation provides a professional, user-friendly experience
 - 🔄 Refresh without losing state
 - 🎯 Access jobs directly via URL
 
-**Access the application**: http://localhost:3040
+**Access the application**: http://localhost:14580
 
 Upload a document and watch the automatic redirect to `/job/[id]`!
 

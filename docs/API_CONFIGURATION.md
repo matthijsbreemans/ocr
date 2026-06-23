@@ -14,7 +14,7 @@ The OCR API supports flexible deployment configurations:
 By default, the Next.js app serves both the frontend and API routes on the same server.
 
 ```
-http://localhost:3040
+http://localhost:14580
 ├── /                    → Frontend (homepage)
 ├── /api-docs           → Swagger UI
 ├── /api/upload         → Upload endpoint
@@ -209,7 +209,7 @@ server {
     server_name api.your-domain.com;
 
     location /api {
-        proxy_pass http://localhost:3040;
+        proxy_pass http://localhost:14580;
 
         # CORS headers
         add_header 'Access-Control-Allow-Origin' 'https://your-domain.com';
@@ -314,8 +314,8 @@ NEXT_PUBLIC_API_BASE_URL=https://api.your-domain.com
 # No NEXT_PUBLIC_API_BASE_URL set
 npm run dev
 
-# Visit http://localhost:3040
-# API calls go to http://localhost:3040/api/*
+# Visit http://localhost:14580
+# API calls go to http://localhost:14580/api/*
 ```
 
 ### Test Different Port
@@ -326,7 +326,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4000 npm run dev
 # Terminal 2: API
 PORT=4000 npm run dev
 
-# Visit http://localhost:3040
+# Visit http://localhost:14580
 # API calls go to http://localhost:4000/api/*
 ```
 
@@ -335,7 +335,7 @@ PORT=4000 npm run dev
 # Edit docker-compose.yml to add environment variables
 docker-compose up
 
-# Frontend: http://localhost:3040
+# Frontend: http://localhost:14580
 # API: (same server or different as configured)
 ```
 
@@ -346,7 +346,7 @@ docker-compose up
 The Swagger UI page shows available servers in a dropdown:
 
 1. **Current Server** (auto-detected)
-2. **Local Development** (http://localhost:3040)
+2. **Local Development** (http://localhost:14580)
 3. **Production** (https://your-domain.com)
 
 Users can switch between servers when testing the API.

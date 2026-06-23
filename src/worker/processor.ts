@@ -1,10 +1,12 @@
 import { prisma } from '../lib/db';
 import { OCRService } from '../services/ocr';
 import { WebhookService } from '../services/webhook';
+import { EmailService } from '../services/email';
 import { FileValidationService } from '../services/fileValidation';
 
 const ocrService = new OCRService();
 const webhookService = new WebhookService();
+const emailService = new EmailService();
 const fileValidator = new FileValidationService();
 
 const POLL_INTERVAL = 5000; // 5 seconds
@@ -47,11 +49,18 @@ async function processNextJob(): Promise<boolean> {
     console.log(`Processing job ${job.id}...`);
 
     try {
+      // The source file is wiped once a job reaches a terminal state, so a
+      // claimed job without file data means it was already finalized.
+      if (!job.fileData) {
+        throw new Error('Job has no file data to process');
+      }
+      const fileData = job.fileData;
+
       // DEFENSE IN DEPTH: Re-validate file before processing
       // Protects against corrupted database or malicious data injection
       console.log(`Re-validating file for job ${job.id}...`);
       const validationResult = await fileValidator.validateFile(
-        job.fileData,
+        fileData,
         job.mimeType
       );
 
@@ -67,9 +76,13 @@ async function processNextJob(): Promise<boolean> {
       );
 
       const ocrPromise = ocrService.processDocument(
-        validationResult.sanitizedBuffer || job.fileData,
+        validationResult.sanitizedBuffer || fileData,
         job.mimeType,
-        { language: 'eng', structured: true }
+        {
+          language: job.language || 'eng',
+          mode: (job.ocrMode as 'auto' | 'printed' | 'handwriting') || 'auto',
+          structured: true,
+        }
       );
 
       const ocrResult = await Promise.race([ocrPromise, timeoutPromise]);
@@ -77,43 +90,80 @@ async function processNextJob(): Promise<boolean> {
       // Serialize the structured result to JSON
       const resultJson = JSON.stringify(ocrResult, null, 2);
 
-      // Update job with results
+      // Privacy: when storeResult is false, the result is delivered via webhook
+      // only and never persisted. The source file is ALWAYS wiped once we reach
+      // a terminal state, regardless of this flag.
+      const storeResult = job.storeResult !== false;
+
+      // Deliver to the webhook first (if configured). For non-stored jobs this
+      // is the only delivery channel, so a failure must fail the job.
+      let webhookError: string | null = null;
+      if (job.callbackWebhook) {
+        const result = await webhookService.sendCallback(
+          job.callbackWebhook,
+          job.id,
+          resultJson,
+          job.email,
+          { stored: storeResult }
+        );
+        if (!result.ok) {
+          webhookError = result.error || 'Webhook delivery failed';
+        }
+      }
+
+      if (webhookError) {
+        // Notify the user by email (best-effort, if SMTP is configured), then
+        // fail the job. The result is discarded for non-stored jobs.
+        await emailService.sendWebhookFailureNotice(
+          job.email,
+          job.id,
+          webhookError,
+          { stored: storeResult }
+        );
+
+        await prisma.job.update({
+          where: { id: job.id },
+          data: {
+            status: 'FAILED',
+            errorMessage: `Webhook delivery failed: ${webhookError}`,
+            ocrResult: storeResult ? resultJson : null,
+            fileData: null, // always wipe the source file
+            processedAt: new Date(),
+          },
+        });
+
+        console.error(
+          `Job ${job.id} failed: webhook delivery error (${webhookError})`
+        );
+        return true;
+      }
+
       await prisma.job.update({
         where: { id: job.id },
         data: {
           status: 'COMPLETED',
-          ocrResult: resultJson,
+          ocrResult: storeResult ? resultJson : null,
+          fileData: null, // always wipe the source file
           processedAt: new Date(),
         },
       });
 
-      console.log(`Job ${job.id} completed successfully`);
-
-      // Send webhook if configured (don't fail job if webhook fails)
-      if (job.callbackWebhook) {
-        try {
-          await webhookService.sendCallback(
-            job.callbackWebhook,
-            job.id,
-            resultJson,
-            job.email
-          );
-        } catch (webhookError) {
-          console.error(`Webhook failed for job ${job.id}:`, webhookError);
-          // Continue - job is still successful even if webhook fails
-        }
-      }
+      console.log(
+        `Job ${job.id} completed successfully` +
+          (storeResult ? '' : ' (result not stored)')
+      );
 
       return true;
     } catch (error) {
       console.error(`Job ${job.id} failed:`, error);
 
-      // Mark job as failed
+      // Mark job as failed and wipe the source file
       await prisma.job.update({
         where: { id: job.id },
         data: {
           status: 'FAILED',
           errorMessage: error instanceof Error ? error.message : 'Unknown error',
+          fileData: null, // always wipe the source file
           processedAt: new Date(),
         },
       });

@@ -18,9 +18,9 @@ docker compose up -d
 ```
 
 **Access:**
-- Web UI: http://localhost:3040
-- Admin: http://localhost:3040/admin
-- API Docs: http://localhost:3040/api-docs
+- Web UI: http://localhost:14580
+- Admin: http://localhost:14580/admin
+- API Docs: http://localhost:14580/api-docs
 
 ---
 
@@ -74,7 +74,7 @@ docker compose exec postgres pg_dump -U ocruser ocrdb > backup_$(date +%Y%m%d).s
 
 ### Check Job Queue
 ```bash
-curl http://localhost:3040/api/admin/stats | jq
+curl http://localhost:14580/api/admin/stats | jq
 ```
 
 ### Clean Old Jobs (30+ days)

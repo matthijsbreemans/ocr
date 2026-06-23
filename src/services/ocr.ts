@@ -1,11 +1,37 @@
-import pdf from 'pdf-parse';
+import { PDFDocument } from 'pdf-lib';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { writeFile, unlink, mkdir, rm } from 'fs/promises';
+import { writeFile, readFile, unlink, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import { preprocessForOcr, OcrMode } from './imagePreprocess';
 
 const execFileAsync = promisify(execFile);
+
+export type { OcrMode };
+
+// Cross-platform Python invocation (previously hard-coded to the Docker
+// layout, which broke local development entirely)
+const PYTHON_BIN =
+  process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+const PADDLE_OCR_SCRIPT =
+  process.env.PADDLE_OCR_SCRIPT || path.join(process.cwd(), 'paddle_ocr.py');
+// Ghostscript ships as `gswin64c` on Windows, `gs` elsewhere
+const GHOSTSCRIPT_BIN =
+  process.env.GHOSTSCRIPT_BIN || (process.platform === 'win32' ? 'gswin64c' : 'gs');
+
+// Hard timeouts for child processes. Without these, execFile never kills the
+// child, so the worker's Promise.race timeout would leave orphaned Python /
+// Ghostscript processes running at full CPU/RAM until the host OOMs. SIGKILL
+// (not the default SIGTERM) ensures a wedged native process actually dies.
+const OCR_TIMEOUT_MS = Number(process.env.OCR_TIMEOUT_MS) || 240_000; // 4 min
+const GHOSTSCRIPT_TIMEOUT_MS =
+  Number(process.env.GHOSTSCRIPT_TIMEOUT_MS) || 120_000; // 2 min
+
+// Cap how many PDF pages are rendered/OCR'd. A 500-page PDF rendered at 300 DPI
+// would expand to multiple GB of decoded images held in memory and OOM the
+// worker; bound it (configurable) and log when truncating.
+const MAX_OCR_PAGES = Number(process.env.MAX_OCR_PAGES) || 100;
 
 export interface BoundingBox {
   x0: number;
@@ -134,6 +160,8 @@ export interface OCRResult {
     lineCount: number;
     avgConfidence: number;
     textOrientation?: number; // degrees
+    engine?: string;
+    mode?: OcrMode;
   };
 }
 
@@ -148,17 +176,18 @@ export class OCRService {
   async processDocument(
     fileBuffer: Buffer,
     mimeType: string,
-    options: { language?: string; structured?: boolean } = {}
+    options: { language?: string; structured?: boolean; mode?: OcrMode } = {}
   ): Promise<OCRResult> {
     const startTime = Date.now();
     const language = options.language || 'eng';
+    const mode = options.mode || 'auto';
     const structured = options.structured !== false; // Default to true
 
     try {
       if (mimeType === 'application/pdf') {
-        return await this.processPDF(fileBuffer, language, structured, startTime);
+        return await this.processPDF(fileBuffer, language, mode, structured, startTime);
       } else {
-        return await this.processImage(fileBuffer, language, structured, startTime);
+        return await this.processImage(fileBuffer, language, mode, structured, startTime);
       }
     } catch (error) {
       throw new Error(`OCR processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -191,44 +220,142 @@ export class OCRService {
   }
 
   /**
-   * Call PaddleOCR Python script to perform OCR
+   * Call the PaddleOCR Python script on one or more images.
+   *
+   * All images are passed in a single invocation so the recognition model
+   * is loaded once per document instead of once per page — model startup
+   * dominates per-page inference time on multi-page PDFs.
+   *
+   * Returns one page object ({ blocks, text }) per input buffer.
    */
-  private async callPaddleOCR(fileBuffer: Buffer, language: string): Promise<any> {
+  private async callPaddleOCR(imageBuffers: Buffer[], language: string): Promise<any[]> {
     // Sanitize language to alphanumeric + underscore only
     const safeLang = language.replace(/[^a-zA-Z0-9_]/g, '');
-    const tempFilePath = path.join(os.tmpdir(), `ocr_${Date.now()}.${safeLang === 'chi_sim' ? 'jpg' : 'png'}`);
+    const batchDir = path.join(
+      os.tmpdir(),
+      `ocr_batch_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+    );
 
     try {
-      // Write buffer to temporary file
-      await writeFile(tempFilePath, fileBuffer);
+      await mkdir(batchDir, { recursive: true });
+      const tempPaths: string[] = [];
+      for (let i = 0; i < imageBuffers.length; i++) {
+        const tempPath = path.join(batchDir, `page-${String(i + 1).padStart(3, '0')}.png`);
+        await writeFile(tempPath, imageBuffers[i]);
+        tempPaths.push(tempPath);
+      }
 
       // Call Python script using execFile (no shell interpretation)
       const { stdout, stderr } = await execFileAsync(
-        'python3',
-        ['/app/paddle_ocr.py', tempFilePath, safeLang],
-        { maxBuffer: 10 * 1024 * 1024 } // 10MB buffer for large outputs
+        PYTHON_BIN,
+        [PADDLE_OCR_SCRIPT, '--lang', safeLang, ...tempPaths],
+        {
+          maxBuffer: 64 * 1024 * 1024,
+          timeout: OCR_TIMEOUT_MS,
+          killSignal: 'SIGKILL',
+        }
       );
 
-      if (stderr && !stderr.includes('WARNING')) {
+      if (
+        stderr &&
+        !stderr.includes('WARNING') &&
+        // Harmless Windows `where.exe` noise emitted by Paddle's startup
+        !stderr.includes('Could not find files for the given pattern')
+      ) {
         console.warn(`PaddleOCR stderr: ${stderr}`);
       }
 
-      // Parse JSON output
-      const result = JSON.parse(stdout);
+      // Parse JSON output. Guard against non-JSON on stdout (e.g. a native
+      // banner from PaddleOCR written outside its output-suppression) so the
+      // failure is diagnosable instead of an opaque SyntaxError.
+      let result: any;
+      try {
+        result = JSON.parse(stdout);
+      } catch {
+        const snippet = stdout.slice(0, 500);
+        throw new Error(
+          `PaddleOCR returned non-JSON output (first 500 chars): ${snippet}`
+        );
+      }
 
       if (!result.success) {
         throw new Error(result.error || 'PaddleOCR failed');
       }
 
-      return result;
+      const pages =
+        Array.isArray(result.pages) && result.pages.length > 0 ? result.pages : [result];
+      return pages;
     } finally {
-      // Cleanup temp file
       try {
-        await unlink(tempFilePath);
+        await rm(batchDir, { recursive: true, force: true });
       } catch (e) {
-        console.error(`Failed to cleanup temp file ${tempFilePath}:`, e);
+        console.error(`Failed to cleanup temp dir ${batchDir}:`, e);
       }
     }
+  }
+
+  /**
+   * Convert one raw PaddleOCR page into the internal block format.
+   * Confidences are normalized from PaddleOCR's 0-1 scale to 0-100 so the
+   * whole result uses one scale (the digital-PDF path already used 0-100).
+   */
+  private transformPaddlePage(page: any): {
+    blocks: any[];
+    text: string;
+    avgConfidence: number;
+  } {
+    const transformedBlocks: any[] = (page.blocks || []).map((block: any) => {
+      const confidence = Math.round(block.confidence * 1000) / 10;
+      const bbox = {
+        x0: block.bbox.x,
+        y0: block.bbox.y,
+        x1: block.bbox.x + block.bbox.width,
+        y1: block.bbox.y + block.bbox.height,
+        width: block.bbox.width,
+        height: block.bbox.height,
+      };
+
+      // Create a word from each block (PaddleOCR doesn't split into words by default)
+      const word = {
+        text: block.text,
+        confidence,
+        bbox,
+      };
+
+      return {
+        text: block.text,
+        confidence,
+        bbox,
+        paragraphs: [
+          {
+            text: block.text,
+            confidence,
+            bbox,
+            lines: [
+              {
+                text: block.text,
+                confidence,
+                bbox,
+                words: [word],
+                baseline: bbox.y1,
+              },
+            ],
+          },
+        ],
+      };
+    });
+
+    const avgConfidence =
+      transformedBlocks.length > 0
+        ? transformedBlocks.reduce((sum, b) => sum + b.confidence, 0) /
+          transformedBlocks.length
+        : 0;
+
+    return {
+      blocks: transformedBlocks,
+      text: (page.text || '').trim(),
+      avgConfidence,
+    };
   }
 
   private estimateFontSize(bbox: BoundingBox): number {
@@ -1235,51 +1362,31 @@ export class OCRService {
   private async processImage(
     fileBuffer: Buffer,
     language: string,
+    mode: OcrMode,
     structured: boolean,
     startTime: number
   ): Promise<OCRResult> {
-    console.log(`Starting PaddleOCR processing with language: ${language}`);
+    console.log(`Starting PaddleOCR processing (language: ${language}, mode: ${mode})`);
 
-    // Call PaddleOCR
-    const paddleResult = await this.callPaddleOCR(fileBuffer, language);
+    const preprocessed = await preprocessForOcr(fileBuffer, mode);
+    const [rawPage] = await this.callPaddleOCR([preprocessed], language);
+    const page = this.transformPaddlePage(rawPage);
+
+    return this.buildPageResult(page, language, mode, structured, startTime);
+  }
+
+  /**
+   * Build an OCRResult from one transformed page.
+   */
+  private buildPageResult(
+    page: { blocks: any[]; text: string; avgConfidence: number },
+    language: string,
+    mode: OcrMode,
+    structured: boolean,
+    startTime: number
+  ): OCRResult {
+    const transformedBlocks = page.blocks;
     const processingTime = Date.now() - startTime;
-
-    // Transform PaddleOCR blocks to our format
-    const transformedBlocks: any[] = paddleResult.blocks.map((block: any, idx: number) => {
-      const bbox = {
-        x0: block.bbox.x,
-        y0: block.bbox.y,
-        x1: block.bbox.x + block.bbox.width,
-        y1: block.bbox.y + block.bbox.height,
-        width: block.bbox.width,
-        height: block.bbox.height
-      };
-
-      // Create a word from each block (PaddleOCR doesn't split into words by default)
-      const word = {
-        text: block.text,
-        confidence: block.confidence,
-        bbox
-      };
-
-      return {
-        text: block.text,
-        confidence: block.confidence,
-        bbox,
-        paragraphs: [{
-          text: block.text,
-          confidence: block.confidence,
-          bbox,
-          lines: [{
-            text: block.text,
-            confidence: block.confidence,
-            bbox,
-            words: [word],
-            baseline: bbox.y1
-          }]
-        }]
-      };
-    });
 
     // Calculate page dimensions
     const pageWidth = transformedBlocks.length > 0
@@ -1292,14 +1399,12 @@ export class OCRService {
     // Count statistics
     const wordCount = transformedBlocks.length;
     const lineCount = transformedBlocks.length;
-    const avgConfidence = transformedBlocks.length > 0
-      ? transformedBlocks.reduce((sum, b) => sum + b.confidence, 0) / transformedBlocks.length
-      : 0;
+    const avgConfidence = page.avgConfidence;
 
     if (!structured) {
       // Return simple text result for backward compatibility
       return {
-        text: paddleResult.text.trim(),
+        text: page.text,
         confidence: avgConfidence,
         blocks: [],
         structure: {
@@ -1317,7 +1422,9 @@ export class OCRService {
           processingTime,
           wordCount,
           lineCount,
-          avgConfidence
+          avgConfidence,
+          engine: 'paddleocr',
+          mode
         },
       };
     }
@@ -1327,7 +1434,7 @@ export class OCRService {
     const structure = this.analyzeDocumentStructure(enrichedBlocks);
 
     return {
-      text: paddleResult.text.trim(),
+      text: page.text,
       confidence: avgConfidence,
       blocks: enrichedBlocks,
       structure,
@@ -1336,19 +1443,70 @@ export class OCRService {
         processingTime,
         wordCount,
         lineCount,
-        avgConfidence
+        avgConfidence,
+        engine: 'paddleocr',
+        mode
       },
     };
+  }
+
+  /**
+   * Extract the embedded text layer from a PDF using pdfjs-dist.
+   * (Replaces pdf-parse, whose bundled 2018 pdf.js rejected PDFs that use
+   * object streams — the default output of most modern PDF generators.)
+   */
+  private async extractPdfText(
+    fileBuffer: Buffer
+  ): Promise<{ text: string; numpages: number }> {
+    const { getDocument } = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const loadingTask = getDocument({
+      data: new Uint8Array(fileBuffer),
+      useSystemFonts: true,
+    });
+
+    try {
+      const doc = await loadingTask.promise;
+      const pageTexts: string[] = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        let pageText = '';
+        for (const item of content.items) {
+          if ('str' in item) {
+            pageText += item.str;
+            if (item.hasEOL) pageText += '\n';
+          }
+        }
+        pageTexts.push(pageText);
+      }
+      return { text: pageTexts.join('\n\n'), numpages: doc.numPages };
+    } finally {
+      await loadingTask.destroy();
+    }
   }
 
   private async processPDF(
     fileBuffer: Buffer,
     language: string,
+    mode: OcrMode,
     structured: boolean,
     startTime: number
   ): Promise<OCRResult> {
-    // First, try to extract text directly from PDF
-    const pdfData = await pdf(fileBuffer);
+    // First, try to extract text directly from PDF. If the text layer can't
+    // be read, fall back to rendering + OCR instead of failing the job.
+    let pdfData: { text: string; numpages: number };
+    try {
+      pdfData = await this.extractPdfText(fileBuffer);
+    } catch (extractError) {
+      console.warn(
+        'PDF text extraction failed, falling back to OCR:',
+        extractError instanceof Error ? extractError.message : extractError
+      );
+      // Page count still needed for the OCR path; the validator already
+      // proved the file loads with pdf-lib.
+      const pdfDoc = await PDFDocument.load(fileBuffer, { ignoreEncryption: true });
+      pdfData = { text: '', numpages: pdfDoc.getPageCount() };
+    }
     const processingTime = Date.now() - startTime;
 
     if (pdfData.text && pdfData.text.trim().length > 0) {
@@ -1381,7 +1539,9 @@ export class OCRService {
             processingTime,
             wordCount,
             lineCount,
-            avgConfidence: 100
+            avgConfidence: 100,
+            engine: 'pdf-text',
+            mode
           },
         };
       }
@@ -1472,7 +1632,9 @@ export class OCRService {
           processingTime,
           wordCount,
           lineCount,
-          avgConfidence: 100
+          avgConfidence: 100,
+          engine: 'pdf-text',
+          mode
         },
       };
     }
@@ -1480,57 +1642,78 @@ export class OCRService {
     // If no text found, convert PDF to images and run OCR
     console.log(`PDF has no extractable text. Converting ${pdfData.numpages} page(s) to images for OCR...`);
 
-    // Write PDF to temp file
-    const tempPdfPath = path.join(os.tmpdir(), `ocr_pdf_${Date.now()}.pdf`);
-    const tempImageDir = path.join(os.tmpdir(), `ocr_pdf_images_${Date.now()}`);
+    // Write PDF to temp file. Paths include a random suffix (not just
+    // Date.now()) so concurrent workers can't collide on the same path and
+    // OCR / delete each other's pages (also avoids a predictable-path TOCTOU).
+    const tempSuffix = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const tempPdfPath = path.join(os.tmpdir(), `ocr_pdf_${tempSuffix}.pdf`);
+    const tempImageDir = path.join(os.tmpdir(), `ocr_pdf_images_${tempSuffix}`);
+
+    // Bound the number of pages we render/OCR to keep memory in check.
+    const pagesToProcess = Math.min(pdfData.numpages, MAX_OCR_PAGES);
+    if (pdfData.numpages > MAX_OCR_PAGES) {
+      console.warn(
+        `PDF has ${pdfData.numpages} pages; OCR limited to the first ${MAX_OCR_PAGES} (MAX_OCR_PAGES).`
+      );
+    }
 
     try {
       await writeFile(tempPdfPath, fileBuffer);
 
-      // Convert PDF to PNG images using ghostscript
+      // Convert PDF to PNG images using ghostscript. -dLastPage avoids
+      // rendering pages beyond the cap we'll actually read.
       await mkdir(tempImageDir, { recursive: true });
       await execFileAsync(
-        'gs',
+        GHOSTSCRIPT_BIN,
         [
           '-dQUIET', '-dNOPAUSE', '-dBATCH',
           '-sDEVICE=png16m', '-r300',
+          `-dLastPage=${pagesToProcess}`,
           `-o${path.join(tempImageDir, 'page-%03d.png')}`,
           tempPdfPath,
         ],
-        { maxBuffer: 50 * 1024 * 1024 } // 50MB buffer
+        {
+          maxBuffer: 50 * 1024 * 1024, // 50MB buffer
+          timeout: GHOSTSCRIPT_TIMEOUT_MS,
+          killSignal: 'SIGKILL',
+        }
       );
 
-      // Process pages in parallel for better performance
-      // Limit concurrency to avoid overwhelming the system
-      const maxConcurrentPages = parseInt(process.env.PDF_PAGE_CONCURRENCY || '4', 10);
-      const pageNumbers = Array.from({ length: pdfData.numpages }, (_, i) => i + 1);
-
-      const processPage = async (pageNum: number): Promise<OCRResult | null> => {
+      // Read and preprocess pages one at a time so we never hold both the raw
+      // PNG and its preprocessed copy for every page simultaneously (that
+      // doubled peak memory). Skip pages Ghostscript failed to render rather
+      // than aborting the whole document.
+      const preprocessed: Buffer[] = [];
+      for (let pageNum = 1; pageNum <= pagesToProcess; pageNum++) {
         const pagePath = path.join(tempImageDir, `page-${String(pageNum).padStart(3, '0')}.png`);
+        let raw: Buffer;
         try {
-          const fs = await import('fs/promises');
-          const pageBuffer = await fs.readFile(pagePath);
-          const pageResult = await this.processImage(pageBuffer, language, structured, startTime);
-          console.log(`Processed PDF page ${pageNum}/${pdfData.numpages}`);
-          return pageResult;
+          raw = await readFile(pagePath);
         } catch (pageError) {
-          console.error(`Error processing PDF page ${pageNum}:`, pageError);
-          return null;
+          console.error(`Missing rendered image for PDF page ${pageNum}:`, pageError);
+          continue;
         }
-      };
-
-      // Process pages in batches for controlled parallelism
-      const pageResults: OCRResult[] = [];
-      for (let i = 0; i < pageNumbers.length; i += maxConcurrentPages) {
-        const batch = pageNumbers.slice(i, i + maxConcurrentPages);
-        const batchResults = await Promise.all(batch.map(processPage));
-        pageResults.push(...batchResults.filter((r): r is OCRResult => r !== null));
+        preprocessed.push(await preprocessForOcr(raw, mode));
       }
 
-      // Combine results from all pages
-      if (pageResults.length === 0) {
-        throw new Error('Failed to process any pages from PDF');
+      if (preprocessed.length === 0) {
+        throw new Error('Failed to render any pages from PDF');
       }
+
+      // OCR every page in a single PaddleOCR invocation — the model loads
+      // once for the whole document instead of once per page.
+      const rawPages = await this.callPaddleOCR(preprocessed, language);
+      console.log(`OCR completed for ${rawPages.length}/${pdfData.numpages} PDF pages`);
+
+      const pageResults: OCRResult[] = rawPages.map((rawPage) =>
+        this.buildPageResult(
+          this.transformPaddlePage(rawPage),
+          language,
+          mode,
+          structured,
+          startTime
+        )
+      );
 
       // Merge all page results
       const combinedText = pageResults.map(r => r.text).join('\n\n');
@@ -1562,7 +1745,9 @@ export class OCRService {
           processingTime: Date.now() - startTime,
           wordCount: totalWords,
           lineCount: totalLines,
-          avgConfidence
+          avgConfidence,
+          engine: 'paddleocr',
+          mode
         },
       };
     } finally {

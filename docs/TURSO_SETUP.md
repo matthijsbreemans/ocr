@@ -596,8 +596,6 @@ TURSO_AUTH_TOKEN="eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEyMyIsImRiIjoib
 NODE_ENV="production"
 APP_DOMAIN="https://ocrtools.com"
 
-# Performance
-PDF_PAGE_CONCURRENCY=4
 ```
 
 ---

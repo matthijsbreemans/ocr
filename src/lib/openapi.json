@@ -15,7 +15,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:3040",
+      "url": "http://localhost:14580",
       "description": "Local Development Server"
     },
     {
@@ -70,6 +70,12 @@
                     "format": "uri",
                     "description": "Optional webhook URL to receive results when processing completes (HTTP or HTTPS allowed, but must not point to private/local networks)",
                     "example": "https://your-app.com/webhook"
+                  },
+                  "storeResult": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "When false, the OCR result is delivered to callbackWebhook only and never stored on the server (it won't be retrievable via the status endpoint). Requires callbackWebhook. The uploaded file is always deleted after processing regardless of this flag.",
+                    "example": true
                   }
                 }
               }
@@ -409,7 +415,7 @@
           "jobId": "550e8400-e29b-41d4-a716-446655440000",
           "email": "user@example.com",
           "ocrResult": "Extracted text from the document...",
-          "statusUrl": "http://localhost:3040/job/550e8400-e29b-41d4-a716-446655440000",
+          "statusUrl": "http://localhost:14580/job/550e8400-e29b-41d4-a716-446655440000",
           "timestamp": "2025-10-21T10:00:15.000Z"
         }
       }

@@ -4,7 +4,7 @@
 
 ### Basic Upload (Image)
 ```bash
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@sample-invoice.png" \
   -F "documentType=invoice" \
   -F "email=user@example.com"
@@ -12,7 +12,7 @@ curl -X POST http://localhost:3040/api/upload \
 
 ### Upload with Webhook Callback
 ```bash
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@contract.pdf" \
   -F "documentType=contract" \
   -F "email=legal@company.com" \
@@ -32,7 +32,7 @@ curl -X POST http://localhost:3040/api/upload \
 
 ### Query Job Status
 ```bash
-curl http://localhost:3040/api/status/a1b2c3d4-e5f6-7890-abcd-ef1234567890
+curl http://localhost:14580/api/status/a1b2c3d4-e5f6-7890-abcd-ef1234567890
 ```
 
 ### Status Response - Pending
@@ -114,7 +114,7 @@ async function uploadDocument(file: File, email: string, documentType: string) {
   formData.append('documentType', documentType);
   formData.append('callbackWebhook', 'https://your-app.com/webhook');
 
-  const response = await fetch('http://localhost:3040/api/upload', {
+  const response = await fetch('http://localhost:14580/api/upload', {
     method: 'POST',
     body: formData,
   });
@@ -124,7 +124,7 @@ async function uploadDocument(file: File, email: string, documentType: string) {
 
 // Check job status
 async function checkStatus(jobId: string) {
-  const response = await fetch(`http://localhost:3040/api/status/${jobId}`);
+  const response = await fetch(`http://localhost:14580/api/status/${jobId}`);
   return await response.json();
 }
 
@@ -168,11 +168,11 @@ def upload_document(file_path, email, document_type, webhook_url=None):
         if webhook_url:
             data['callbackWebhook'] = webhook_url
 
-        response = requests.post('http://localhost:3040/api/upload', files=files, data=data)
+        response = requests.post('http://localhost:14580/api/upload', files=files, data=data)
         return response.json()
 
 def check_status(job_id):
-    response = requests.get(f'http://localhost:3040/api/status/{job_id}')
+    response = requests.get(f'http://localhost:14580/api/status/{job_id}')
     return response.json()
 
 def wait_for_completion(job_id, timeout=300):

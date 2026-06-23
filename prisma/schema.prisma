@@ -18,7 +18,12 @@ model Job {
   documentType    String    @map("document_type")
   email           String
   callbackWebhook String?   @map("callback_webhook")
-  fileData        Bytes     @map("file_data")
+  storeResult     Boolean   @default(true) @map("store_result")
+  language        String    @default("eng")
+  ocrMode         String    @default("auto") @map("ocr_mode")
+  // Nullable: the source file is always wiped once the job reaches a terminal
+  // state, and stays null afterwards. Only populated while PENDING/PROCESSING.
+  fileData        Bytes?    @map("file_data")
   fileName        String    @map("file_name")
   mimeType        String    @map("mime_type")
   ocrResult       String?   @map("ocr_result")

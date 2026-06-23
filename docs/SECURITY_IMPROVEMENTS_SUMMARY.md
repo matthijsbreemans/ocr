@@ -193,7 +193,7 @@ Save Results / Send Webhook
 
 ### Test Valid Upload
 ```bash
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@invoice.png" \
   -F "documentType=invoice" \
   -F "email=user@example.com"
@@ -206,7 +206,7 @@ curl -X POST http://localhost:3040/api/upload \
 # Create fake image
 echo "not an image" > fake.png
 
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@fake.png" \
   -F "documentType=test" \
   -F "email=user@example.com"
@@ -217,7 +217,7 @@ curl -X POST http://localhost:3040/api/upload \
 
 ### Test SSRF Protection
 ```bash
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@invoice.png" \
   -F "documentType=invoice" \
   -F "email=user@example.com" \

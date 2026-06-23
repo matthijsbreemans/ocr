@@ -241,7 +241,7 @@ Potential improvements:
 
 To test the structured output:
 
-1. Upload a document via the web UI at http://localhost:3040
+1. Upload a document via the web UI at http://localhost:14580
 2. Wait for processing to complete
 3. Switch between "Plain Text", "Structured Data", and "Raw JSON" tabs
 4. Observe confidence scores and document hierarchy
@@ -249,7 +249,7 @@ To test the structured output:
 ## Documentation
 
 - Main README: See `/README.md`
-- API Documentation: http://localhost:3040/api-docs
+- API Documentation: http://localhost:14580/api-docs
 - Security: See `/SECURITY.md`
 - Project Summary: See `/SHORT_MEMORY.md`
 

@@ -34,4 +34,4 @@ This folder contains detailed documentation for the OCR API Service.
 ## 🔗 Quick Links
 
 - [Back to Main README](../README.md)
-- [API Documentation (Swagger UI)](http://localhost:3040/api-docs) - When running locally
+- [API Documentation (Swagger UI)](http://localhost:14580/api-docs) - When running locally

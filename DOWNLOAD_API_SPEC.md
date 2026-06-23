@@ -6,10 +6,10 @@
 
 ```bash
 # Download JSON spec
-curl http://localhost:3040/api/openapi > openapi.json
+curl http://localhost:14580/api/openapi > openapi.json
 
 # Or with pretty formatting
-curl http://localhost:3040/api/openapi | jq . > openapi.json
+curl http://localhost:14580/api/openapi | jq . > openapi.json
 
 # Production URL
 curl https://your-domain.com/api/openapi > openapi.json
@@ -17,19 +17,19 @@ curl https://your-domain.com/api/openapi > openapi.json
 
 ### Option 2: Browser Download
 
-1. Open: http://localhost:3040/api/openapi
+1. Open: http://localhost:14580/api/openapi
 2. Right-click → "Save As..." → `openapi.json`
 
 ### Option 3: From Swagger UI
 
-1. Open: http://localhost:3040/api-docs
+1. Open: http://localhost:14580/api-docs
 2. Look for the spec URL at the top
 3. Click or copy: `/api/openapi`
 
 ### Option 4: Using wget
 
 ```bash
-wget http://localhost:3040/api/openapi -O openapi.json
+wget http://localhost:14580/api/openapi -O openapi.json
 ```
 
 ---
@@ -51,7 +51,7 @@ wget http://localhost:3040/api/openapi -O openapi.json
 
 ### Import to Postman
 
-1. Download spec: `curl http://localhost:3040/api/openapi > openapi.json`
+1. Download spec: `curl http://localhost:14580/api/openapi > openapi.json`
 2. Open Postman
 3. Click **Import** → **Upload Files** → Select `openapi.json`
 4. Done! All endpoints ready to test
@@ -64,19 +64,19 @@ npm install @openapitools/openapi-generator-cli -g
 
 # Generate TypeScript client
 openapi-generator-cli generate \
-  -i http://localhost:3040/api/openapi \
+  -i http://localhost:14580/api/openapi \
   -g typescript-fetch \
   -o ./client
 
 # Generate Python client
 openapi-generator-cli generate \
-  -i http://localhost:3040/api/openapi \
+  -i http://localhost:14580/api/openapi \
   -g python \
   -o ./python-client
 
 # Generate PHP client
 openapi-generator-cli generate \
-  -i http://localhost:3040/api/openapi \
+  -i http://localhost:14580/api/openapi \
   -g php \
   -o ./php-client
 ```
@@ -88,7 +88,7 @@ openapi-generator-cli generate \
 npm install -g @apidevtools/swagger-cli
 
 # Validate spec
-swagger-cli validate http://localhost:3040/api/openapi
+swagger-cli validate http://localhost:14580/api/openapi
 ```
 
 ---
@@ -108,18 +108,18 @@ The spec URL will always be at: `{BASE_URL}/api/openapi`
 ## Viewing the Spec
 
 ### Swagger UI (Interactive)
-- **URL**: http://localhost:3040/api-docs
+- **URL**: http://localhost:14580/api-docs
 - **Features**: Try-it-out, test requests, see responses
 
 ### Raw JSON
-- **URL**: http://localhost:3040/api/openapi
+- **URL**: http://localhost:14580/api/openapi
 - **Format**: OpenAPI 3.0.3 JSON
 
 ### YAML Conversion
 
 ```bash
 # Convert JSON to YAML
-curl http://localhost:3040/api/openapi | yq -P > openapi.yaml
+curl http://localhost:14580/api/openapi | yq -P > openapi.yaml
 ```
 
 ---
@@ -128,17 +128,17 @@ curl http://localhost:3040/api/openapi | yq -P > openapi.yaml
 
 ```bash
 # JSON format
-curl http://localhost:3040/api/openapi > openapi.json
+curl http://localhost:14580/api/openapi > openapi.json
 
 # Pretty JSON
-curl http://localhost:3040/api/openapi | jq . > openapi.json
+curl http://localhost:14580/api/openapi | jq . > openapi.json
 
 # YAML format
-curl http://localhost:3040/api/openapi | yq -P > openapi.yaml
+curl http://localhost:14580/api/openapi | yq -P > openapi.yaml
 
 # View in browser
-open http://localhost:3040/api/openapi
+open http://localhost:14580/api/openapi
 
 # Interactive docs
-open http://localhost:3040/api-docs
+open http://localhost:14580/api-docs
 ```

@@ -198,7 +198,6 @@ LOG_MAX_FILE=3                  # Dev: 1, Prod: 3
 
 ```bash
 WORKER_REPLICAS=1               # Number of worker instances
-PDF_PAGE_CONCURRENCY=4          # Pages per job in parallel
 ```
 
 ---

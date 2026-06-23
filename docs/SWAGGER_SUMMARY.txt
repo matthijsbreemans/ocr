@@ -6,7 +6,7 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. Interactive Swagger UI
-   Location: http://localhost:3040/api-docs
+   Location: http://localhost:14580/api-docs
    Features:
    ├─ "Try it out" functionality for all endpoints
    ├─ Request/response examples
@@ -59,13 +59,13 @@ Modified:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Interactive Documentation:
-  http://localhost:3040/api-docs
+  http://localhost:14580/api-docs
 
 OpenAPI JSON Spec:
-  http://localhost:3040/api/openapi
+  http://localhost:14580/api/openapi
 
 Homepage with Web UI:
-  http://localhost:3040
+  http://localhost:14580
 
 
 🎯 KEY FEATURES
@@ -79,7 +79,7 @@ Homepage with Web UI:
 │  ║  OCR API Service - API Documentation                ║           │
 │  ╚══════════════════════════════════════════════════════╝           │
 │                                                                      │
-│  [Servers: http://localhost:3040 ▼]                                │
+│  [Servers: http://localhost:14580 ▼]                                │
 │                                                                      │
 │  ▼ POST /api/upload                                                 │
 │    Upload a document for OCR processing                             │
@@ -122,7 +122,7 @@ Homepage with Web UI:
 
 Option 1: Same Origin (Default)
 ┌────────────────────────────────────────┐
-│  http://localhost:3040                 │
+│  http://localhost:14580                 │
 │  ├─ /          → Frontend              │
 │  ├─ /api-docs  → Swagger UI            │
 │  ├─ /api/upload    → Upload endpoint   │
@@ -134,7 +134,7 @@ Configuration: None needed!
 
 Option 2: Different Port
 ┌─────────────────────────┐     ┌─────────────────────────┐
-│  localhost:3040         │     │  localhost:4000         │
+│  localhost:14580         │     │  localhost:4000         │
 │  - Frontend             │ ──► │  - /api/upload          │
 │  - Swagger UI           │     │  - /api/status/:id      │
 └─────────────────────────┘     └─────────────────────────┘
@@ -182,7 +182,7 @@ Configuration:
    (or: npm run dev)
 
 2. Open Swagger UI:
-   🌐 http://localhost:3040/api-docs
+   🌐 http://localhost:14580/api-docs
 
 3. Test upload endpoint:
    ├─ Click "POST /api/upload"
@@ -207,12 +207,12 @@ Configuration:
 Import to Postman:
   1. Open Postman
   2. Click "Import"
-  3. Enter: http://localhost:3040/api/openapi
+  3. Enter: http://localhost:14580/api/openapi
   4. Done! All endpoints imported
 
 Generate Client SDK:
   $ npx @openapitools/openapi-generator-cli generate \
-      -i http://localhost:3040/api/openapi \
+      -i http://localhost:14580/api/openapi \
       -g typescript-fetch \
       -o ./client
 
@@ -248,4 +248,4 @@ Total added size: ~450KB (gzipped)
 
 The OCR API now has PROFESSIONAL, INTERACTIVE API DOCUMENTATION! 🎉
 
-Visit: http://localhost:3040/api-docs
+Visit: http://localhost:14580/api-docs

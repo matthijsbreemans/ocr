@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/auth';
 
 // Get single job details
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+
   try {
     const job = await prisma.job.findUnique({
       where: { id: params.id },
@@ -28,7 +32,7 @@ export async function GET(
     return NextResponse.json({
       ...job,
       fileData: undefined, // Don't send file data
-      fileSizeBytes: job.fileData.length,
+      fileSizeBytes: job.fileData?.length ?? 0, // null once the file is wiped
       processingTime,
       isStuck,
       age: now.getTime() - createdAt.getTime(),
@@ -47,6 +51,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+
   try {
     // Check if job exists
     const job = await prisma.job.findUnique({
@@ -94,6 +101,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
+
   try {
     const body = await request.json();
     const { status, errorMessage } = body;

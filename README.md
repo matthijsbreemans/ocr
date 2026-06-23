@@ -7,6 +7,10 @@ A production-ready, queue-based OCR (Optical Character Recognition) API built as
 - 🎨 **Modern Web UI** - Interactive drag-and-drop file upload with real-time status updates
 - 🚀 **Queue-based processing** - Upload files and process them asynchronously
 - 📄 **Multiple formats** - Support for images (PNG, JPEG, TIFF, BMP, WebP) and PDFs
+- ✍️ **Handwriting recognition** - PP-OCRv5 models recognize handwritten text; a dedicated handwriting mode adds contrast-boosting preprocessing
+- 🌍 **13 languages** - Selectable per upload (European languages, Chinese, Japanese, Korean, Arabic, Russian)
+- 🔬 **Image preprocessing** - EXIF rotation, transparency flattening, and automatic upscaling of small images before OCR
+- ⚡ **Batched PDF OCR** - All pages of a scanned PDF run through a single model load instead of one per page
 - 🔔 **Webhook callbacks** - Get notified when OCR processing completes
 - 🆔 **Job tracking** - Query job status and results by ID
 - 🐳 **Docker ready** - Full Docker Compose setup included
@@ -23,7 +27,7 @@ A production-ready, queue-based OCR (Optical Character Recognition) API built as
 - **Next.js 14** - Modern React framework for API routes and frontend
 - **PostgreSQL** - Database for job queue and results
 - **Prisma** - Type-safe database ORM
-- **PaddleOCR** - Advanced OCR engine for text extraction with multilingual support
+- **PaddleOCR 3.x (PP-OCRv5)** - OCR engine for printed and handwritten text with multilingual support
 - **Docker** - Containerized deployment
 - **Background Worker** - Separate process for OCR job processing
 
@@ -46,19 +50,19 @@ cp .env.example .env
 docker compose up -d
 
 # Access the application
-open http://localhost:3040         # Web Interface
-open http://localhost:3040/admin   # Admin Dashboard
-open http://localhost:3040/api-docs # API Documentation
+open http://localhost:14580         # Web Interface
+open http://localhost:14580/admin   # Admin Dashboard
+open http://localhost:14580/api-docs # API Documentation
 ```
 
 This will start:
-- PostgreSQL database on port 5433 (mapped from 5432)
-- Next.js API on port 3040
+- PostgreSQL database on port 15433 (mapped from 5432)
+- Next.js API on port 14580
 - Background worker for OCR processing
 
 **📚 For Production Deployment:** See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive guide including NGINX setup, SSL, scaling, monitoring, and security.
 
-3. Access the API at `http://localhost:3040`
+3. Access the API at `http://localhost:14580`
 
 ### Local Development
 
@@ -92,11 +96,25 @@ npm run dev
 npm run worker
 ```
 
+> **Note:** Running OCR locally (outside Docker) requires Python 3 with
+> PaddleOCR installed: `pip install paddlepaddle==3.0.0 paddleocr==3.2.0`.
+> Set `PYTHON_BIN` in `.env` if your interpreter isn't `python`/`python3`.
+
+### Running Tests
+
+```bash
+npm test            # Playwright E2E suite (starts the dev server itself)
+npm run test:ui     # Interactive test runner
+```
+
+Keep `npm run worker` running in another terminal — the job-completion test
+waits for a real OCR result.
+
 ## API Documentation
 
 ### 📖 Interactive Swagger UI
 
-Visit **http://localhost:3040/api-docs** for the full interactive API documentation with:
+Visit **http://localhost:14580/api-docs** for the full interactive API documentation with:
 - ✅ Try-it-out functionality for all endpoints
 - ✅ Request/response examples
 - ✅ Complete schema documentation
@@ -113,10 +131,12 @@ Visit **http://localhost:3040/api-docs** for the full interactive API documentat
 - `documentType` (required) - Type of document (e.g., "invoice", "receipt", "contract")
 - `email` (required) - Email address for notifications
 - `callbackWebhook` (optional) - URL to receive POST callback when processing completes
+- `language` (optional, default `eng`) - Document language: `eng`, `fra`, `deu`, `spa`, `ita`, `por`, `nld`, `chi_sim`, `chi_tra`, `jpn`, `kor`, `ara`, `rus`
+- `ocrMode` (optional, default `auto`) - Recognition mode: `auto`, `printed`, or `handwriting` (boosts contrast and sharpens strokes for handwritten documents)
 
 **Example with curl:**
 ```bash
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@/path/to/document.png" \
   -F "documentType=invoice" \
   -F "email=user@example.com" \
@@ -138,7 +158,7 @@ curl -X POST http://localhost:3040/api/upload \
 
 **Example:**
 ```bash
-curl http://localhost:3040/api/status/550e8400-e29b-41d4-a716-446655440000
+curl http://localhost:14580/api/status/550e8400-e29b-41d4-a716-446655440000
 ```
 
 **Response (Pending):**
@@ -297,7 +317,7 @@ See [docs/SECURITY.md](docs/SECURITY.md) for complete production hardening check
 
 ## Admin Dashboard
 
-Access the admin dashboard at: **http://localhost:3040/admin**
+Access the admin dashboard at: **http://localhost:14580/admin**
 
 Features:
 - 📊 Real-time job statistics and monitoring

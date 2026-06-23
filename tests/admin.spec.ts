@@ -41,11 +41,12 @@ test.describe('Admin Dashboard Tests', () => {
     // Wait for stats to load
     await page.waitForTimeout(1000);
 
-    // Check for stats cards
-    await expect(page.locator('text=Total Jobs')).toBeVisible();
-    await expect(page.locator('text=Pending')).toBeVisible();
-    await expect(page.locator('text=Processing')).toBeVisible();
-    await expect(page.locator('text=Completed')).toBeVisible();
+    // Check for stats cards (.first() — the same words also appear in the
+    // job list rows once the database has jobs)
+    await expect(page.locator('text=Total Jobs').first()).toBeVisible();
+    await expect(page.locator('text=Pending').first()).toBeVisible();
+    await expect(page.locator('text=Processing').first()).toBeVisible();
+    await expect(page.locator('text=Completed').first()).toBeVisible();
   });
 
   test('should display status filter tabs', async ({ page }) => {
@@ -145,11 +146,12 @@ test.describe('Admin Dashboard Tests', () => {
       // Wait for modal to appear
       await page.waitForTimeout(500);
 
-      // Check modal content
-      await expect(page.locator('text=Job Details')).toBeVisible();
-      await expect(page.locator('text=Job ID')).toBeVisible();
-      await expect(page.locator('text=Status')).toBeVisible();
-      await expect(page.locator('text=File Name')).toBeVisible();
+      // Check modal content (.first() — these words also appear elsewhere
+      // on the dashboard)
+      await expect(page.locator('text=Job Details').first()).toBeVisible();
+      await expect(page.locator('text=Job ID').first()).toBeVisible();
+      await expect(page.locator('text=Status').first()).toBeVisible();
+      await expect(page.locator('text=File Name').first()).toBeVisible();
     }
   });
 

@@ -5,7 +5,7 @@
 **Name:** OCR API Service
 **Type:** Queue-based OCR (Optical Character Recognition) SaaS API
 **Tech Stack:** Next.js 14, React, TypeScript, PostgreSQL, Prisma, Docker
-**Port:** 3040 (localhost)
+**Port:** 14580 (localhost)
 **Status:** Fully functional with comprehensive security and documentation
 
 ---
@@ -26,7 +26,7 @@ A complete, production-ready OCR API that:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    User Interface Layer                      │
-│  - Modern React/Next.js Web UI (port 3040)                  │
+│  - Modern React/Next.js Web UI (port 14580)                  │
 │  - Interactive Swagger UI Documentation                      │
 │  - Test Client (HTML)                                        │
 └─────────────────────────────────────────────────────────────┘
@@ -173,11 +173,11 @@ See `SECURITY.md` for complete production checklist.
 
 | Service | URL | Description |
 |---------|-----|-------------|
-| **Homepage** | http://localhost:3040 | Web UI with drag & drop upload |
-| **Swagger UI** | http://localhost:3040/api-docs | Interactive API documentation |
-| **Upload API** | POST http://localhost:3040/api/upload | Upload documents |
-| **Status API** | GET http://localhost:3040/api/status/:id | Check job status |
-| **OpenAPI Spec** | http://localhost:3040/api/openapi | API specification (JSON) |
+| **Homepage** | http://localhost:14580 | Web UI with drag & drop upload |
+| **Swagger UI** | http://localhost:14580/api-docs | Interactive API documentation |
+| **Upload API** | POST http://localhost:14580/api/upload | Upload documents |
+| **Status API** | GET http://localhost:14580/api/status/:id | Check job status |
+| **OpenAPI Spec** | http://localhost:14580/api/openapi | API specification (JSON) |
 | **Database** | postgresql://ocruser:ocrpassword@localhost:5432/ocrdb | PostgreSQL |
 
 ---
@@ -212,19 +212,19 @@ npm run worker
 ### Test the API
 ```bash
 # Upload a document
-curl -X POST http://localhost:3040/api/upload \
+curl -X POST http://localhost:14580/api/upload \
   -F "file=@test.png" \
   -F "documentType=invoice" \
   -F "email=test@example.com"
 
 # Check status (use ID from upload response)
-curl http://localhost:3040/api/status/{job-id}
+curl http://localhost:14580/api/status/{job-id}
 
 # Or use the web UI
-open http://localhost:3040
+open http://localhost:14580
 
 # Or use Swagger UI
-open http://localhost:3040/api-docs
+open http://localhost:14580/api-docs
 ```
 
 ---
@@ -283,9 +283,9 @@ NODE_ENV="development"
 ## 🛠️ NPM Scripts
 
 ```bash
-npm run dev          # Start dev server (port 3040)
+npm run dev          # Start dev server (port 14580)
 npm run build        # Build for production
-npm start            # Start production server (port 3040)
+npm start            # Start production server (port 14580)
 npm run worker       # Start background worker
 npm run prisma:generate  # Generate Prisma client
 npm run prisma:push      # Push schema to DB
@@ -422,7 +422,7 @@ services:
 
   api:
     - Next.js app (frontend + API)
-    - Port 3040 (external) → 3000 (internal)
+    - Port 14580 (external) → 3000 (internal)
     - Auto-runs prisma db push
     - Depends on postgres health
 
@@ -434,9 +434,9 @@ services:
 ```
 
 ### Port Mapping
-- **Host → Container:** 3040:3000
+- **Host → Container:** 14580:3000
 - **Internal container port:** 3000 (Next.js default)
-- **External access:** Port 3040
+- **External access:** Port 14580
 
 ---
 
@@ -464,15 +464,15 @@ services:
 ```bash
 # Test MIME spoofing protection
 echo "fake" > fake.png
-curl -X POST http://localhost:3040/api/upload -F "file=@fake.png" -F "documentType=test" -F "email=test@example.com"
+curl -X POST http://localhost:14580/api/upload -F "file=@fake.png" -F "documentType=test" -F "email=test@example.com"
 # Expected: 400 - File validation failed
 
 # Test valid upload
-curl -X POST http://localhost:3040/api/upload -F "file=@real.png" -F "documentType=invoice" -F "email=test@example.com"
+curl -X POST http://localhost:14580/api/upload -F "file=@real.png" -F "documentType=invoice" -F "email=test@example.com"
 # Expected: 201 - Job created
 
 # Test SSRF protection
-curl -X POST http://localhost:3040/api/upload -F "file=@test.png" -F "documentType=test" -F "email=test@example.com" -F "callbackWebhook=http://localhost/admin"
+curl -X POST http://localhost:14580/api/upload -F "file=@test.png" -F "documentType=test" -F "email=test@example.com" -F "callbackWebhook=http://localhost/admin"
 # Expected: 400 - Private network blocked
 ```
 
@@ -536,8 +536,8 @@ Open `test-client.html` in browser for interactive testing.
 - **Docker:** Consistent deployment
 
 ### Port Choice
-- **3040:** Avoids common port conflicts (3000 often used)
-- **Port range:** 3040+ leaves room for related services
+- **14580:** Avoids common port conflicts (3000 often used)
+- **Port range:** 14580+ leaves room for related services
 
 ---
 
@@ -583,7 +583,7 @@ docker-compose ps
 ### Monitoring
 ```bash
 # Watch job processing
-watch -n 2 'curl -s http://localhost:3040/api/status/{job-id}'
+watch -n 2 'curl -s http://localhost:14580/api/status/{job-id}'
 
 # Monitor worker activity
 docker-compose logs -f worker | grep "Processing job"
@@ -609,8 +609,8 @@ npx tsc --noEmit
 
 ### Issue: Port already in use
 ```bash
-# Find what's using port 3040
-lsof -i :3040
+# Find what's using port 14580
+lsof -i :14580
 # Kill the process or change port in docker-compose.yml
 ```
 
@@ -645,7 +645,7 @@ docker-compose logs api
 - Main README: `README.md`
 - Security: `SECURITY.md`
 - API Examples: `EXAMPLES.md`
-- Swagger UI: http://localhost:3040/api-docs
+- Swagger UI: http://localhost:14580/api-docs
 
 ### External Links
 - Next.js Docs: https://nextjs.org/docs
@@ -684,7 +684,7 @@ docker-compose logs api
 - ✅ Request/response examples
 
 ### Configuration
-- ✅ Port changed to 3040
+- ✅ Port changed to 14580
 - ✅ Flexible API base URL support
 - ✅ Environment variable configuration
 - ✅ Docker Compose setup
@@ -719,13 +719,13 @@ A complete, functional OCR API service with:
 
 **Project Status:** COMPLETE & READY TO USE! 🎉
 
-**Access:** http://localhost:3040
-**Docs:** http://localhost:3040/api-docs
+**Access:** http://localhost:14580
+**Docs:** http://localhost:14580/api-docs
 **Start:** `./start.sh`
 
 ---
 
 *Last Updated: 2025-10-21*
 *Project: OCR API Service*
-*Port: 3040*
+*Port: 14580*
 *Version: 1.0.0*

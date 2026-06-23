@@ -26,7 +26,7 @@ GRANT ALL PRIVILEGES ON DATABASE ocrdb TO ocruser;
 
 ```bash
 # Comment out local database
-# DATABASE_URL="postgresql://ocruser:ocrpassword@localhost:5433/ocrdb"
+# DATABASE_URL="postgresql://ocruser:ocrpassword@localhost:15433/ocrdb"
 
 # Use external database
 DATABASE_URL="postgresql://ocruser:your_password@db.example.com:5432/ocrdb?sslmode=require"

@@ -34,6 +34,9 @@ export async function POST(request: NextRequest) {
     const documentType = formData.get('documentType') as string;
     const email = formData.get('email') as string;
     const callbackWebhook = formData.get('callbackWebhook') as string | null;
+    const storeResult = formData.get('storeResult') as string | null;
+    const language = formData.get('language') as string | null;
+    const ocrMode = formData.get('ocrMode') as string | null;
 
     // Validate required fields
     if (!file) {
@@ -48,6 +51,9 @@ export async function POST(request: NextRequest) {
       documentType,
       email,
       callbackWebhook: callbackWebhook || undefined,
+      storeResult: storeResult ?? undefined,
+      language: language || undefined,
+      ocrMode: ocrMode || undefined,
     });
 
     if (!validation.success) {
@@ -93,6 +99,9 @@ export async function POST(request: NextRequest) {
         documentType: validation.data.documentType,
         email: validation.data.email,
         callbackWebhook: validation.data.callbackWebhook || null,
+        storeResult: validation.data.storeResult,
+        language: validation.data.language,
+        ocrMode: validation.data.ocrMode,
         fileData: sanitizedBuffer,
         fileName: file.name,
         mimeType: validationResult.detectedType || file.type, // Use detected type, not claimed
